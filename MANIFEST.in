@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include erpnext_e_invoicing *.css
+recursive-include erpnext_e_invoicing *.csv
+recursive-include erpnext_e_invoicing *.html
+recursive-include erpnext_e_invoicing *.ico
+recursive-include erpnext_e_invoicing *.js
+recursive-include erpnext_e_invoicing *.json
+recursive-include erpnext_e_invoicing *.md
+recursive-include erpnext_e_invoicing *.png
+recursive-include erpnext_e_invoicing *.py
+recursive-include erpnext_e_invoicing *.svg
+recursive-include erpnext_e_invoicing *.txt
+recursive-exclude erpnext_e_invoicing *.pyc
