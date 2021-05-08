@@ -1,0 +1,723 @@
+{
+ "actions": [],
+ "autoname": "field:invoice_number",
+ "creation": "2021-05-08 14:30:49.929314",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "version",
+  "transaction_details_section",
+  "tax_scheme",
+  "reverse_charge",
+  "igst_on_intra",
+  "column_break_6",
+  "supply_type",
+  "ecommerce_gstin",
+  "document_details_section",
+  "invoice_number",
+  "invoice_date",
+  "column_break_12",
+  "invoice_type",
+  "seller_details_section",
+  "seller_gstin",
+  "seller_legal_name",
+  "seller_trade_name",
+  "seller_address_line_1",
+  "seller_address_line_2",
+  "column_break_20",
+  "seller_location",
+  "seller_pincode",
+  "seller_state_code",
+  "seller_phone",
+  "seller_email",
+  "buyer_details_section",
+  "buyer_gstin",
+  "buyer_legal_name",
+  "buyer_trade_name",
+  "buyer_address_line_1",
+  "buyer_address_line_2",
+  "column_break_33",
+  "buyer_location",
+  "buyer_pincode",
+  "buyer_state_code",
+  "buyer_phone",
+  "buyer_email",
+  "dispatch_details_section",
+  "dispatch_legal_name",
+  "dispatch_address_line_1",
+  "dispatch_address_line_2",
+  "column_break_43",
+  "dispatch_location",
+  "dispatch_pincode",
+  "dispatch_state_code",
+  "shipping_details_section",
+  "shippping_gstin",
+  "shippping_legal_name",
+  "shippping_trade_name",
+  "shippping_location",
+  "column_break_51",
+  "shippping_address_line_1",
+  "shippping_address_line_2",
+  "shippping_pincode",
+  "shippping_state_code",
+  "item_details_section",
+  "items",
+  "value_details_section",
+  "ass_value",
+  "cgst_value",
+  "sgst_value",
+  "igst_value",
+  "cess_value",
+  "base_invoice_value",
+  "column_break_64",
+  "invoice_discount",
+  "other_charges",
+  "round_off_amount",
+  "state_cess_value",
+  "invoice_value",
+  "payment_details_section",
+  "payee_name",
+  "account_detail",
+  "mode",
+  "branch_or_ifsc",
+  "column_break_74",
+  "payment_term",
+  "credit_days",
+  "paid_amount",
+  "payment_due",
+  "reference_details_section",
+  "previous_document_no",
+  "column_break_81",
+  "previous_document_date",
+  "export_details_section",
+  "export_bill_no",
+  "export_bill_date",
+  "export_duty",
+  "claiming_refund",
+  "column_break_87",
+  "port_code",
+  "currency_code",
+  "country_code",
+  "eway_bill_details_section",
+  "transporter_gstin",
+  "transporter_name",
+  "mode_of_transport",
+  "distance",
+  "column_break_97",
+  "transport_document_no",
+  "transport_document_date",
+  "vehicle_no",
+  "vehicle_type",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "default": "1.1",
+   "fieldname": "version",
+   "fieldtype": "Float",
+   "label": "Version",
+   "precision": "1",
+   "read_only": 1
+  },
+  {
+   "fieldname": "transaction_details_section",
+   "fieldtype": "Section Break",
+   "label": "Transaction Details"
+  },
+  {
+   "default": "GST",
+   "fieldname": "tax_scheme",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Tax Scheme",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "reverse_charge",
+   "fieldtype": "Check",
+   "label": "Reverse Charge"
+  },
+  {
+   "default": "0",
+   "depends_on": "igst_on_intra",
+   "fieldname": "igst_on_intra",
+   "fieldtype": "Check",
+   "label": "IGST on Intra"
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "supply_type",
+   "fieldtype": "Select",
+   "label": "Supply Type",
+   "options": "B2B\nSEZWP\nSEZWOP\nEXPWP\nEXPWOP\nDEXP"
+  },
+  {
+   "depends_on": "ecommerce_gstin",
+   "fieldname": "ecommerce_gstin",
+   "fieldtype": "Data",
+   "label": "Ecommerce GSTIN"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "E Invoice",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "document_details_section",
+   "fieldtype": "Section Break",
+   "label": "Document Details"
+  },
+  {
+   "fieldname": "invoice_number",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Invoice Number",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "invoice_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Invoice Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "invoice_type",
+   "fieldtype": "Select",
+   "label": "Invoice Type",
+   "options": "INV\nCRN\nDBN"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "seller_details_section",
+   "fieldtype": "Section Break",
+   "label": "Seller Details"
+  },
+  {
+   "fieldname": "column_break_20",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "seller_gstin",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "GSTIN",
+   "reqd": 1
+  },
+  {
+   "fieldname": "seller_legal_name",
+   "fieldtype": "Data",
+   "label": "Legal Name",
+   "reqd": 1
+  },
+  {
+   "depends_on": "seller_trade_name",
+   "fieldname": "seller_trade_name",
+   "fieldtype": "Data",
+   "label": "Trade Name"
+  },
+  {
+   "fieldname": "seller_address_line_1",
+   "fieldtype": "Data",
+   "label": "Address Line 1",
+   "reqd": 1
+  },
+  {
+   "depends_on": "seller_address_line_2",
+   "fieldname": "seller_address_line_2",
+   "fieldtype": "Data",
+   "label": "Address Line 2"
+  },
+  {
+   "fieldname": "seller_location",
+   "fieldtype": "Data",
+   "label": "Location",
+   "reqd": 1
+  },
+  {
+   "fieldname": "seller_pincode",
+   "fieldtype": "Int",
+   "label": "Pincode",
+   "reqd": 1
+  },
+  {
+   "fieldname": "seller_state_code",
+   "fieldtype": "Data",
+   "label": "State Code",
+   "reqd": 1
+  },
+  {
+   "depends_on": "seller_phone",
+   "fieldname": "seller_phone",
+   "fieldtype": "Data",
+   "label": "Phone"
+  },
+  {
+   "depends_on": "seller_email",
+   "fieldname": "seller_email",
+   "fieldtype": "Data",
+   "label": "Email"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "buyer_details_section",
+   "fieldtype": "Section Break",
+   "label": "Buyer Details"
+  },
+  {
+   "fieldname": "column_break_33",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "buyer_gstin",
+   "fieldtype": "Data",
+   "label": "GSTIN",
+   "reqd": 1
+  },
+  {
+   "fieldname": "buyer_legal_name",
+   "fieldtype": "Data",
+   "label": "Legal Name",
+   "reqd": 1
+  },
+  {
+   "depends_on": "buyer_trade_name",
+   "fieldname": "buyer_trade_name",
+   "fieldtype": "Data",
+   "label": "Trade Name"
+  },
+  {
+   "fieldname": "buyer_address_line_1",
+   "fieldtype": "Data",
+   "label": "Address Line 1",
+   "reqd": 1
+  },
+  {
+   "depends_on": "buyer_address_line_2",
+   "fieldname": "buyer_address_line_2",
+   "fieldtype": "Data",
+   "label": "Address Line 2"
+  },
+  {
+   "fieldname": "buyer_location",
+   "fieldtype": "Data",
+   "label": "Location",
+   "reqd": 1
+  },
+  {
+   "fieldname": "buyer_pincode",
+   "fieldtype": "Int",
+   "label": "Pincode",
+   "reqd": 1
+  },
+  {
+   "fieldname": "buyer_state_code",
+   "fieldtype": "Data",
+   "label": "State Code",
+   "reqd": 1
+  },
+  {
+   "depends_on": "buyer_phone",
+   "fieldname": "buyer_phone",
+   "fieldtype": "Data",
+   "label": "Phone"
+  },
+  {
+   "depends_on": "buyer_email",
+   "fieldname": "buyer_email",
+   "fieldtype": "Data",
+   "label": "Email"
+  },
+  {
+   "depends_on": "dispatch_legal_name",
+   "fieldname": "dispatch_details_section",
+   "fieldtype": "Section Break",
+   "label": "Dispatch Details"
+  },
+  {
+   "fieldname": "column_break_43",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "dispatch_legal_name",
+   "fieldtype": "Data",
+   "label": "Legal Name"
+  },
+  {
+   "fieldname": "dispatch_address_line_1",
+   "fieldtype": "Data",
+   "label": "Address Line 1",
+   "mandatory_depends_on": "dispatch_legal_name"
+  },
+  {
+   "depends_on": "dispatch_address_line_2",
+   "fieldname": "dispatch_address_line_2",
+   "fieldtype": "Data",
+   "label": "Address Line 2"
+  },
+  {
+   "fieldname": "dispatch_location",
+   "fieldtype": "Data",
+   "label": "Location",
+   "mandatory_depends_on": "dispatch_legal_name"
+  },
+  {
+   "fieldname": "dispatch_pincode",
+   "fieldtype": "Int",
+   "label": "Pincode",
+   "mandatory_depends_on": "dispatch_legal_name"
+  },
+  {
+   "fieldname": "dispatch_state_code",
+   "fieldtype": "Data",
+   "label": "State Code",
+   "mandatory_depends_on": "dispatch_legal_name"
+  },
+  {
+   "depends_on": "shippping_legal_name",
+   "fieldname": "shipping_details_section",
+   "fieldtype": "Section Break",
+   "label": "Shipping Details"
+  },
+  {
+   "depends_on": "shipping_gstin",
+   "fieldname": "shippping_gstin",
+   "fieldtype": "Data",
+   "label": "GSTIN"
+  },
+  {
+   "fieldname": "shippping_legal_name",
+   "fieldtype": "Data",
+   "label": "Legal Name"
+  },
+  {
+   "depends_on": "shipping_trade_name",
+   "fieldname": "shippping_trade_name",
+   "fieldtype": "Data",
+   "label": "Trade Name"
+  },
+  {
+   "fieldname": "column_break_51",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "shippping_address_line_1",
+   "fieldtype": "Data",
+   "label": "Address Line 1",
+   "mandatory_depends_on": "shippping_legal_name"
+  },
+  {
+   "depends_on": "shippping_address_line_2",
+   "fieldname": "shippping_address_line_2",
+   "fieldtype": "Data",
+   "label": "Address Line 2"
+  },
+  {
+   "fieldname": "shippping_location",
+   "fieldtype": "Data",
+   "label": "Location",
+   "mandatory_depends_on": "shippping_legal_name"
+  },
+  {
+   "fieldname": "shippping_pincode",
+   "fieldtype": "Int",
+   "label": "Pincode",
+   "mandatory_depends_on": "shippping_legal_name"
+  },
+  {
+   "fieldname": "shippping_state_code",
+   "fieldtype": "Data",
+   "label": "State Code",
+   "mandatory_depends_on": "shippping_legal_name"
+  },
+  {
+   "fieldname": "value_details_section",
+   "fieldtype": "Section Break",
+   "label": "Value Details"
+  },
+  {
+   "fieldname": "ass_value",
+   "fieldtype": "Currency",
+   "label": "Assessable Value",
+   "reqd": 1
+  },
+  {
+   "fieldname": "cgst_value",
+   "fieldtype": "Currency",
+   "label": "CGST Value"
+  },
+  {
+   "fieldname": "sgst_value",
+   "fieldtype": "Currency",
+   "label": "SGST Value"
+  },
+  {
+   "fieldname": "igst_value",
+   "fieldtype": "Currency",
+   "label": "IGST Value"
+  },
+  {
+   "depends_on": "cess_value",
+   "fieldname": "cess_value",
+   "fieldtype": "Currency",
+   "label": "Cess Value"
+  },
+  {
+   "fieldname": "base_invoice_value",
+   "fieldtype": "Currency",
+   "label": "Invoice Value (Company Currency)",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_64",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "invoice_discount",
+   "fieldtype": "Currency",
+   "label": "Invoice Discount"
+  },
+  {
+   "fieldname": "other_charges",
+   "fieldtype": "Currency",
+   "label": "Other Charges"
+  },
+  {
+   "fieldname": "round_off_amount",
+   "fieldtype": "Currency",
+   "label": "Round Off Amount"
+  },
+  {
+   "fieldname": "invoice_value",
+   "fieldtype": "Currency",
+   "label": "Invoice Value",
+   "reqd": 1
+  },
+  {
+   "depends_on": "state_cess_value",
+   "fieldname": "state_cess_value",
+   "fieldtype": "Currency",
+   "label": "State Cess Value"
+  },
+  {
+   "depends_on": "payee_name",
+   "fieldname": "payment_details_section",
+   "fieldtype": "Section Break",
+   "label": "Payment Details"
+  },
+  {
+   "fieldname": "payee_name",
+   "fieldtype": "Data",
+   "label": "Payee Name"
+  },
+  {
+   "fieldname": "account_detail",
+   "fieldtype": "Data",
+   "label": "Account Detail"
+  },
+  {
+   "fieldname": "mode",
+   "fieldtype": "Data",
+   "label": "Mode of Payment"
+  },
+  {
+   "fieldname": "branch_or_ifsc",
+   "fieldtype": "Data",
+   "label": "Branch or IFSC Code"
+  },
+  {
+   "fieldname": "payment_term",
+   "fieldtype": "Data",
+   "label": "Payment Term"
+  },
+  {
+   "fieldname": "credit_days",
+   "fieldtype": "Int",
+   "label": "Credit Days"
+  },
+  {
+   "fieldname": "paid_amount",
+   "fieldtype": "Currency",
+   "label": "Paid Amount"
+  },
+  {
+   "fieldname": "payment_due",
+   "fieldtype": "Currency",
+   "label": "Payment Due"
+  },
+  {
+   "depends_on": "previous_document_no",
+   "fieldname": "reference_details_section",
+   "fieldtype": "Section Break",
+   "label": "Reference Details"
+  },
+  {
+   "fieldname": "previous_document_no",
+   "fieldtype": "Data",
+   "label": "Previous Document No."
+  },
+  {
+   "fieldname": "previous_document_date",
+   "fieldtype": "Date",
+   "label": "Previous Document Date"
+  },
+  {
+   "depends_on": "export_bill_no",
+   "fieldname": "export_details_section",
+   "fieldtype": "Section Break",
+   "label": "Export Details"
+  },
+  {
+   "fieldname": "export_bill_no",
+   "fieldtype": "Data",
+   "label": "Shipping Bill No."
+  },
+  {
+   "fieldname": "export_bill_date",
+   "fieldtype": "Date",
+   "label": "Shipping Bill Date"
+  },
+  {
+   "fieldname": "port_code",
+   "fieldtype": "Data",
+   "label": "Port Code"
+  },
+  {
+   "default": "0",
+   "fieldname": "claiming_refund",
+   "fieldtype": "Check",
+   "label": "Claiming Refund"
+  },
+  {
+   "fieldname": "currency_code",
+   "fieldtype": "Data",
+   "label": "Currency Code"
+  },
+  {
+   "fieldname": "country_code",
+   "fieldtype": "Data",
+   "label": "Country Code"
+  },
+  {
+   "fieldname": "export_duty",
+   "fieldtype": "Currency",
+   "label": "Export Duty"
+  },
+  {
+   "depends_on": "transporter_gstin",
+   "fieldname": "eway_bill_details_section",
+   "fieldtype": "Section Break",
+   "label": "E-Way Bill Details"
+  },
+  {
+   "fieldname": "column_break_87",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "transporter_gstin",
+   "fieldtype": "Data",
+   "label": "Transporter GSTIN"
+  },
+  {
+   "fieldname": "transporter_name",
+   "fieldtype": "Data",
+   "label": "Transporter Name"
+  },
+  {
+   "fieldname": "mode_of_transport",
+   "fieldtype": "Select",
+   "label": "Mode of Transport",
+   "options": "Road\nRail\nAir\nShip"
+  },
+  {
+   "fieldname": "distance",
+   "fieldtype": "Int",
+   "label": "Distance"
+  },
+  {
+   "fieldname": "transport_document_no",
+   "fieldtype": "Data",
+   "label": "Transport Document No."
+  },
+  {
+   "fieldname": "transport_document_date",
+   "fieldtype": "Date",
+   "label": "Transport Document Date"
+  },
+  {
+   "fieldname": "vehicle_no",
+   "fieldtype": "Data",
+   "label": "Vehicle No."
+  },
+  {
+   "fieldname": "vehicle_type",
+   "fieldtype": "Select",
+   "label": "Vehicle Type",
+   "options": "\nODC\nRegular"
+  },
+  {
+   "fieldname": "column_break_74",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_81",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_97",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "item_details_section",
+   "fieldtype": "Section Break",
+   "label": "Item Details"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "E Invoice Item",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2021-05-08 15:52:10.730956",
+ "modified_by": "Administrator",
+ "module": "ERPNext E-Invoicing",
+ "name": "E Invoice",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
