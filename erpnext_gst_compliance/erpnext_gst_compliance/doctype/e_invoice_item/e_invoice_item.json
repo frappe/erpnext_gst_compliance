@@ -1,0 +1,174 @@
+{
+ "actions": [],
+ "creation": "2021-05-08 15:21:31.926611",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "product_details_section",
+  "item_name",
+  "is_service_item",
+  "column_break_4",
+  "hsn_code",
+  "section_break_6",
+  "quantity",
+  "unit",
+  "rate",
+  "amount",
+  "column_break_11",
+  "discount",
+  "taxable_value",
+  "tax_details_section",
+  "gst_rate",
+  "cgst_amount",
+  "sgst_amount",
+  "igst_amount",
+  "column_break_19",
+  "cess_rate",
+  "cess_amount",
+  "cess_nadv_amount",
+  "other_charges",
+  "section_break_24",
+  "total_item_value"
+ ],
+ "fields": [
+  {
+   "fieldname": "product_details_section",
+   "fieldtype": "Section Break",
+   "label": "Product Details"
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Name"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_service_item",
+   "fieldtype": "Check",
+   "label": "Is Service Item"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "hsn_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "HSN Code"
+  },
+  {
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "quantity",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Quantity"
+  },
+  {
+   "fieldname": "unit",
+   "fieldtype": "Data",
+   "label": "Unit"
+  },
+  {
+   "fieldname": "rate",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Rate"
+  },
+  {
+   "fieldname": "amount",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Amount"
+  },
+  {
+   "fieldname": "column_break_11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "discount",
+   "fieldtype": "Currency",
+   "label": "Discount"
+  },
+  {
+   "fieldname": "taxable_value",
+   "fieldtype": "Currency",
+   "label": "Taxable Value"
+  },
+  {
+   "fieldname": "tax_details_section",
+   "fieldtype": "Section Break",
+   "label": "Tax Details"
+  },
+  {
+   "fieldname": "gst_rate",
+   "fieldtype": "Float",
+   "label": "GST Rate"
+  },
+  {
+   "fieldname": "cgst_amount",
+   "fieldtype": "Currency",
+   "label": "CGST Amount"
+  },
+  {
+   "fieldname": "sgst_amount",
+   "fieldtype": "Currency",
+   "label": "SGST Amount"
+  },
+  {
+   "fieldname": "igst_amount",
+   "fieldtype": "Currency",
+   "label": "IGST Amount"
+  },
+  {
+   "fieldname": "column_break_19",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cess_rate",
+   "fieldtype": "Float",
+   "label": "Cess Rate"
+  },
+  {
+   "fieldname": "cess_amount",
+   "fieldtype": "Currency",
+   "label": "Cess Amount"
+  },
+  {
+   "fieldname": "cess_nadv_amount",
+   "fieldtype": "Currency",
+   "label": "Cess Non-Advol Amount"
+  },
+  {
+   "fieldname": "other_charges",
+   "fieldtype": "Currency",
+   "label": "Other Charges"
+  },
+  {
+   "fieldname": "section_break_24",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "total_item_value",
+   "fieldtype": "Currency",
+   "label": "Total Item Value"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2021-05-08 15:26:07.228112",
+ "modified_by": "Administrator",
+ "module": "ERPNext GST Compliance",
+ "name": "E Invoice Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
