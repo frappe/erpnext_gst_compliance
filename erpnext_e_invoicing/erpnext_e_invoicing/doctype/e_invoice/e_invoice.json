@@ -1,6 +1,6 @@
 {
  "actions": [],
- "autoname": "field:invoice_number",
+ "autoname": "field:invoice",
  "creation": "2021-05-08 14:30:49.929314",
  "doctype": "DocType",
  "editable_grid": 1,
@@ -15,7 +15,7 @@
   "supply_type",
   "ecommerce_gstin",
   "document_details_section",
-  "invoice_number",
+  "invoice",
   "invoice_date",
   "column_break_12",
   "invoice_type",
@@ -41,6 +41,7 @@
   "buyer_location",
   "buyer_pincode",
   "buyer_state_code",
+  "buyer_place_of_supply",
   "buyer_phone",
   "buyer_email",
   "dispatch_details_section",
@@ -109,6 +110,9 @@
   "transport_document_date",
   "vehicle_no",
   "vehicle_type",
+  "other_details_section",
+  "company",
+  "column_break_106",
   "amended_from"
  ],
  "fields": [
@@ -116,6 +120,7 @@
    "default": "1.1",
    "fieldname": "version",
    "fieldtype": "Float",
+   "hidden": 1,
    "label": "Version",
    "precision": "1",
    "read_only": 1
@@ -178,14 +183,7 @@
    "label": "Document Details"
   },
   {
-   "fieldname": "invoice_number",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Invoice Number",
-   "reqd": 1,
-   "unique": 1
-  },
-  {
+   "fetch_from": "invoice.posting_date",
    "fieldname": "invoice_date",
    "fieldtype": "Date",
    "in_list_view": 1,
@@ -693,12 +691,43 @@
    "label": "Items",
    "options": "E Invoice Item",
    "reqd": 1
+  },
+  {
+   "fieldname": "other_details_section",
+   "fieldtype": "Section Break",
+   "label": "Other Details"
+  },
+  {
+   "fetch_from": "invoice.company",
+   "fieldname": "company",
+   "fieldtype": "Data",
+   "label": "Company",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_106",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "invoice",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Invoice Number",
+   "options": "Sales Invoice",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "depends_on": "buyer_place_of_supply",
+   "fieldname": "buyer_place_of_supply",
+   "fieldtype": "Data",
+   "label": "Place of Supply"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-05-08 15:52:10.730956",
+ "modified": "2021-05-09 16:08:30.281023",
  "modified_by": "Administrator",
  "module": "ERPNext E-Invoicing",
  "name": "E Invoice",
