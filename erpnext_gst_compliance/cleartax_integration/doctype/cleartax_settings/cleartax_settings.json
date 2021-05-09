@@ -6,6 +6,8 @@
  "engine": "InnoDB",
  "field_order": [
   "enabled",
+  "sandbox_mode",
+  "auth_token",
   "credentials"
  ],
  "fields": [
@@ -22,12 +24,27 @@
    "fieldname": "enabled",
    "fieldtype": "Check",
    "label": "Enable"
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "auth_token",
+   "fieldtype": "Password",
+   "label": "Authorization Token",
+   "mandatory_depends_on": "enabled"
+  },
+  {
+   "default": "0",
+   "depends_on": "enabled",
+   "fieldname": "sandbox_mode",
+   "fieldtype": "Check",
+   "label": "Sandbox Mode",
+   "mandatory_depends_on": "enabled"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2021-05-08 16:56:04.274355",
+ "modified": "2021-05-09 14:39:34.015257",
  "modified_by": "Administrator",
  "module": "Cleartax Integration",
  "name": "Cleartax Settings",
