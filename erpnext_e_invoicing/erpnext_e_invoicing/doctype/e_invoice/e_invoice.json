@@ -617,7 +617,7 @@
    "label": "Export Duty"
   },
   {
-   "depends_on": "transporter_gstin",
+   "depends_on": "transporter_name",
    "fieldname": "eway_bill_details_section",
    "fieldtype": "Section Break",
    "label": "E-Way Bill Details"
@@ -640,7 +640,7 @@
    "fieldname": "mode_of_transport",
    "fieldtype": "Select",
    "label": "Mode of Transport",
-   "options": "Road\nRail\nAir\nShip"
+   "options": "1\n2\n3\n4"
   },
   {
    "fieldname": "distance",
@@ -666,7 +666,7 @@
    "fieldname": "vehicle_type",
    "fieldtype": "Select",
    "label": "Vehicle Type",
-   "options": "\nODC\nRegular"
+   "options": "\nO\nR"
   },
   {
    "fieldname": "column_break_74",
@@ -727,7 +727,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-05-09 16:08:30.281023",
+ "modified": "2021-05-10 14:19:03.437668",
  "modified_by": "Administrator",
  "module": "ERPNext E-Invoicing",
  "name": "E Invoice",
