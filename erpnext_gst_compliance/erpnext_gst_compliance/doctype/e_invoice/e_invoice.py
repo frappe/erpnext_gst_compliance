@@ -119,13 +119,13 @@ class EInvoice(Document):
 		discount_applied_on_net_total = self.get_invoice_discount_type() == 'Net Total'
 
 		for item in self.sales_invoice.items:
-			is_service_item = frappe.db.get_value('Item', item.item_code, 'is_stock_item')
+			is_stock_item = frappe.db.get_value('Item', item.item_code, 'is_stock_item')
 			discount = abs(item.base_amount - item.base_net_amount) if discount_applied_on_net_total else 0
 
 			einvoice_item = frappe._dict({
 				'item_code': item.item_code,
 				'item_name': item.item_name,
-				'is_service_item': is_service_item,
+				'is_service_item': not is_stock_item,
 				'hsn_code': item.gst_hsn_code,
 				'quantity': abs(item.qty),
 				'discount': discount,
@@ -279,7 +279,7 @@ class EInvoice(Document):
 			"DocDtls": {
 				"Typ": self.invoice_type,
 				"No": self.invoice,
-				"Dt": self.invoice_date
+				"Dt": format_date(self.invoice_date, 'dd/mm/yyyy')
 			}
 		}
 
@@ -294,19 +294,25 @@ class EInvoice(Document):
 		return einvoice_json
 
 	def get_party_address_json(self):
-		addresses = {
+		addresses = {}
+		seller_address = {
 			"SellerDtls": {
 				"Gstin": self.seller_gstin,
 				"LglNm": self.seller_legal_name,
 				"TrdNm": self.seller_trade_name,
 				"Addr1": self.seller_address_line_1,
-				"Addr2": self.seller_address_line_2,
 				"Loc": self.seller_location,
 				"Pin": self.seller_pincode,
 				"Stcd": self.seller_state_code,
 				"Ph": self.seller_phone,
 				"Em": self.seller_email
 			},
+		}
+		if self.seller_address_line_2:
+			seller_address.update({"Addr2": self.seller_address_line_2})
+		addresses.update(seller_address)
+
+		buyer_address = {
 			"BuyerDtls": {
 				"Gstin": self.buyer_gstin,
 				"LglNm": self.buyer_legal_name,
@@ -321,21 +327,27 @@ class EInvoice(Document):
 				"Em": self.buyer_email
 			}
 		}
+		if self.buyer_address_line_2:
+			buyer_address.update({"Addr2": self.buyer_address_line_2})
+		addresses.update(buyer_address)
 
 		if self.dispatch_legal_name:
-			addresses.update({
+			dispatch_address = {
 				"DispDtls": {
 					"Nm": self.dispatch_legal_name,
 					"Addr1": self.dispatch_address_line_1,
-					"Addr2": self.dispatch_address_line_2,
 					"Loc": self.dispatch_location,
 					"Pin": self.dispatch_pincode,
 					"Stcd": self.dispatch_state_code
 				}
-			})
+			}
+			if self.dispatch_address_line_2:
+				dispatch_address.update({"Addr2": self.dispatch_address_line_2})
+			addresses.update(dispatch_address)
+
 
 		if self.shipping_legal_name:
-			addresses.update({
+			shipping_address = {
 				"ShipDtls": {
 					"Gstin": self.shipping_gstin,
 					"LglNm": self.shippping_legal_name,
@@ -347,7 +359,10 @@ class EInvoice(Document):
 					"Pin": self.shipping_pincode,
 					"Stcd": self.shipping_state_code
 				}
-			})
+			}
+			if self.shipping_address_line_2:
+				shipping_address.update({"Addr2": self.shipping_address_line_2})
+			addresses.update(shipping_address)
 
 		return addresses
 
@@ -357,7 +372,7 @@ class EInvoice(Document):
 			item = {
 				"SlNo": row.idx,
 				"PrdDesc": row.item_name,
-				"IsServc": row.is_service_item,
+				"IsServc": "Y" if row.is_service_item else "N",
 				"HsnCd": row.hsn_code,
 				"Qty": row.quantity,
 				"Unit": row.unit,
@@ -423,7 +438,7 @@ class EInvoice(Document):
 				"PrecDocDtls": [
 					{
 						"InvNo": self.previous_document_no,
-						"InvDt": self.previous_document_date
+						"InvDt": format_date(self.previous_document_date, 'dd/mm/yyyy')
 					}
 				]
 			}
@@ -436,7 +451,7 @@ class EInvoice(Document):
 		return {
 			"ExpDtls": {
 				"ShipBNo": self.export_bill_no,
-				"ShipBDt": self.export_bill_date,
+				"ShipBDt": format_date(self.export_bill_date, 'dd/mm/yyyy'),
 				"Port": self.port_code,
 				"RefClm": "Y" if self.claiming_refund else "N",
 				"ForCur": self.currency_code,
@@ -460,11 +475,25 @@ class EInvoice(Document):
 				"TransName": self.transporter_name,
 				"Distance": self.distance or 0,
 				"TransDocNo": self.transport_document_no,
-				"TransDocDt": self.transport_document_date,
+				"TransDocDt": format_date(self.transport_document_date, 'dd/mm/yyyy'),
 				"VehNo": self.vehicle_no,
 				"VehType": vehicle_type,
 				"TransMode": mode_of_transport
 			}
 		}
 
+def create_einvoice(sales_invoice):
+	if frappe.db.exists('E Invoice', sales_invoice):
+		einvoice = frappe.get_doc('E Invoice', sales_invoice)
+	else:
+		einvoice = frappe.new_doc('E Invoice')
+		einvoice.invoice = sales_invoice
 
+	# to fetch details from 'fetch_from' fields
+	einvoice._action = 'save'
+	einvoice._validate_links()
+
+	einvoice.fetch_invoice_details()
+	einvoice.save()
+
+	return einvoice

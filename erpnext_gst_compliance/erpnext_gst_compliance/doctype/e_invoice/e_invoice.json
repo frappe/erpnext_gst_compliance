@@ -527,15 +527,15 @@
    "fieldname": "paid_amount",
    "fieldtype": "Currency",
    "label": "Paid Amount",
-   "precision": 2,
-   "non_negative": 1
+   "non_negative": 1,
+   "precision": "2"
   },
   {
    "fieldname": "payment_due",
    "fieldtype": "Currency",
    "label": "Payment Due",
-   "precision": 2,
-   "non_negative": 1
+   "non_negative": 1,
+   "precision": "2"
   },
   {
    "depends_on": "previous_document_no",
@@ -594,8 +594,8 @@
    "fieldname": "export_duty",
    "fieldtype": "Currency",
    "label": "Export Duty",
-   "precision": 2,
-   "non_negative": 1
+   "non_negative": 1,
+   "precision": "2"
   },
   {
    "depends_on": "transporter_name",
@@ -695,13 +695,13 @@
    "options": "Road\nAir\nRail\nShip"
   },
   {
-   "fetch_from": "invoice.lr_date",
+   "fetch_from": "invoice.lr_no",
    "fieldname": "transport_document_no",
    "fieldtype": "Data",
    "label": "Transport Document No."
   },
   {
-   "fetch_from": "invoice.lr_no",
+   "fetch_from": "invoice.lr_date",
    "fieldname": "transport_document_date",
    "fieldtype": "Date",
    "label": "Transport Document Date"
@@ -763,7 +763,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-05-11 13:22:40.704253",
+ "modified": "2021-05-11 16:06:57.367022",
  "modified_by": "Administrator",
  "module": "ERPNext GST Compliance",
  "name": "E Invoice",
