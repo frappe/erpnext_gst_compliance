@@ -53,15 +53,15 @@
   "dispatch_pincode",
   "dispatch_state_code",
   "shipping_details_section",
-  "shippping_gstin",
-  "shippping_legal_name",
-  "shippping_trade_name",
-  "shippping_location",
+  "shipping_gstin",
+  "shipping_legal_name",
+  "shipping_trade_name",
+  "shipping_location",
   "column_break_51",
-  "shippping_address_line_1",
-  "shippping_address_line_2",
-  "shippping_pincode",
-  "shippping_state_code",
+  "shipping_address_line_1",
+  "shipping_address_line_2",
+  "shipping_pincode",
+  "shipping_state_code",
   "item_details_section",
   "items",
   "value_details_section",
@@ -393,55 +393,8 @@
    "label": "Shipping Details"
   },
   {
-   "depends_on": "shipping_gstin",
-   "fieldname": "shippping_gstin",
-   "fieldtype": "Data",
-   "label": "GSTIN"
-  },
-  {
-   "fieldname": "shippping_legal_name",
-   "fieldtype": "Data",
-   "label": "Legal Name"
-  },
-  {
-   "depends_on": "shipping_trade_name",
-   "fieldname": "shippping_trade_name",
-   "fieldtype": "Data",
-   "label": "Trade Name"
-  },
-  {
    "fieldname": "column_break_51",
    "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "shippping_address_line_1",
-   "fieldtype": "Data",
-   "label": "Address Line 1",
-   "mandatory_depends_on": "shippping_legal_name"
-  },
-  {
-   "depends_on": "shippping_address_line_2",
-   "fieldname": "shippping_address_line_2",
-   "fieldtype": "Data",
-   "label": "Address Line 2"
-  },
-  {
-   "fieldname": "shippping_location",
-   "fieldtype": "Data",
-   "label": "Location",
-   "mandatory_depends_on": "shippping_legal_name"
-  },
-  {
-   "fieldname": "shippping_pincode",
-   "fieldtype": "Int",
-   "label": "Pincode",
-   "mandatory_depends_on": "shippping_legal_name"
-  },
-  {
-   "fieldname": "shippping_state_code",
-   "fieldtype": "Data",
-   "label": "State Code",
-   "mandatory_depends_on": "shippping_legal_name"
   },
   {
    "fieldname": "value_details_section",
@@ -452,33 +405,45 @@
    "fieldname": "ass_value",
    "fieldtype": "Currency",
    "label": "Assessable Value",
+   "non_negative": 1,
+   "precision": "2",
    "reqd": 1
   },
   {
    "fieldname": "cgst_value",
    "fieldtype": "Currency",
-   "label": "CGST Value"
+   "label": "CGST Value",
+   "non_negative": 1,
+   "precision": "2"
   },
   {
    "fieldname": "sgst_value",
    "fieldtype": "Currency",
-   "label": "SGST Value"
+   "label": "SGST Value",
+   "non_negative": 1,
+   "precision": "2"
   },
   {
    "fieldname": "igst_value",
    "fieldtype": "Currency",
-   "label": "IGST Value"
+   "label": "IGST Value",
+   "non_negative": 1,
+   "precision": "2"
   },
   {
    "depends_on": "cess_value",
    "fieldname": "cess_value",
    "fieldtype": "Currency",
-   "label": "Cess Value"
+   "label": "Cess Value",
+   "non_negative": 1,
+   "precision": "2"
   },
   {
    "fieldname": "base_invoice_value",
    "fieldtype": "Currency",
    "label": "Invoice Value (Company Currency)",
+   "non_negative": 1,
+   "precision": "2",
    "reqd": 1
   },
   {
@@ -488,29 +453,39 @@
   {
    "fieldname": "invoice_discount",
    "fieldtype": "Currency",
-   "label": "Invoice Discount"
+   "label": "Invoice Discount",
+   "non_negative": 1,
+   "precision": "2"
   },
   {
    "fieldname": "other_charges",
    "fieldtype": "Currency",
-   "label": "Other Charges"
+   "label": "Other Charges",
+   "non_negative": 1,
+   "precision": "2"
   },
   {
    "fieldname": "round_off_amount",
    "fieldtype": "Currency",
-   "label": "Round Off Amount"
+   "label": "Round Off Amount",
+   "non_negative": 1,
+   "precision": "2"
   },
   {
    "fieldname": "invoice_value",
    "fieldtype": "Currency",
    "label": "Invoice Value",
+   "non_negative": 1,
+   "precision": "2",
    "reqd": 1
   },
   {
    "depends_on": "state_cess_value",
    "fieldname": "state_cess_value",
    "fieldtype": "Currency",
-   "label": "State Cess Value"
+   "label": "State Cess Value",
+   "non_negative": 1,
+   "precision": "2"
   },
   {
    "depends_on": "payee_name",
@@ -551,12 +526,16 @@
   {
    "fieldname": "paid_amount",
    "fieldtype": "Currency",
-   "label": "Paid Amount"
+   "label": "Paid Amount",
+   "precision": 2,
+   "non_negative": 1
   },
   {
    "fieldname": "payment_due",
    "fieldtype": "Currency",
-   "label": "Payment Due"
+   "label": "Payment Due",
+   "precision": 2,
+   "non_negative": 1
   },
   {
    "depends_on": "previous_document_no",
@@ -614,7 +593,9 @@
   {
    "fieldname": "export_duty",
    "fieldtype": "Currency",
-   "label": "Export Duty"
+   "label": "Export Duty",
+   "precision": 2,
+   "non_negative": 1
   },
   {
    "depends_on": "transporter_name",
@@ -627,46 +608,17 @@
    "fieldtype": "Column Break"
   },
   {
-   "fieldname": "transporter_gstin",
-   "fieldtype": "Data",
-   "label": "Transporter GSTIN"
-  },
-  {
-   "fieldname": "transporter_name",
-   "fieldtype": "Data",
-   "label": "Transporter Name"
-  },
-  {
-   "fieldname": "mode_of_transport",
-   "fieldtype": "Select",
-   "label": "Mode of Transport",
-   "options": "1\n2\n3\n4"
-  },
-  {
+   "fetch_from": "invoice.distance",
    "fieldname": "distance",
    "fieldtype": "Int",
    "label": "Distance"
   },
   {
-   "fieldname": "transport_document_no",
-   "fieldtype": "Data",
-   "label": "Transport Document No."
-  },
-  {
-   "fieldname": "transport_document_date",
-   "fieldtype": "Date",
-   "label": "Transport Document Date"
-  },
-  {
-   "fieldname": "vehicle_no",
-   "fieldtype": "Data",
-   "label": "Vehicle No."
-  },
-  {
+   "fetch_from": "invoice.gst_vehicle_type",
    "fieldname": "vehicle_type",
    "fieldtype": "Select",
    "label": "Vehicle Type",
-   "options": "\nO\nR"
+   "options": "\nRegular\nOver Dimensional Cargo (ODC)"
   },
   {
    "fieldname": "column_break_74",
@@ -722,12 +674,96 @@
    "fieldname": "buyer_place_of_supply",
    "fieldtype": "Data",
    "label": "Place of Supply"
+  },
+  {
+   "fetch_from": "invoice.gst_transporter_id",
+   "fieldname": "transporter_gstin",
+   "fieldtype": "Data",
+   "label": "Transporter GSTIN"
+  },
+  {
+   "fetch_from": "invoice.transporter_name",
+   "fieldname": "transporter_name",
+   "fieldtype": "Data",
+   "label": "Transporter Name"
+  },
+  {
+   "fetch_from": "invoice.mode_of_transport",
+   "fieldname": "mode_of_transport",
+   "fieldtype": "Select",
+   "label": "Mode of Transport",
+   "options": "Road\nAir\nRail\nShip"
+  },
+  {
+   "fetch_from": "invoice.lr_date",
+   "fieldname": "transport_document_no",
+   "fieldtype": "Data",
+   "label": "Transport Document No."
+  },
+  {
+   "fetch_from": "invoice.lr_no",
+   "fieldname": "transport_document_date",
+   "fieldtype": "Date",
+   "label": "Transport Document Date"
+  },
+  {
+   "fetch_from": "invoice.vehicle_no",
+   "fieldname": "vehicle_no",
+   "fieldtype": "Data",
+   "label": "Vehicle No."
+  },
+  {
+   "depends_on": "shipping_gstin",
+   "fieldname": "shipping_gstin",
+   "fieldtype": "Data",
+   "label": "GSTIN"
+  },
+  {
+   "fieldname": "shipping_legal_name",
+   "fieldtype": "Data",
+   "label": "Legal Name"
+  },
+  {
+   "depends_on": "shipping_trade_name",
+   "fieldname": "shipping_trade_name",
+   "fieldtype": "Data",
+   "label": "Trade Name"
+  },
+  {
+   "fieldname": "shipping_location",
+   "fieldtype": "Data",
+   "label": "Location",
+   "mandatory_depends_on": "shippping_legal_name"
+  },
+  {
+   "fieldname": "shipping_address_line_1",
+   "fieldtype": "Data",
+   "label": "Address Line 1",
+   "mandatory_depends_on": "shippping_legal_name"
+  },
+  {
+   "depends_on": "shippping_address_line_2",
+   "fieldname": "shipping_address_line_2",
+   "fieldtype": "Data",
+   "label": "Address Line 2"
+  },
+  {
+   "fieldname": "shipping_pincode",
+   "fieldtype": "Int",
+   "label": "Pincode",
+   "mandatory_depends_on": "shippping_legal_name"
+  },
+  {
+   "fieldname": "shipping_state_code",
+   "fieldtype": "Data",
+   "label": "State Code",
+   "mandatory_depends_on": "shippping_legal_name"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-05-10 14:19:03.437668",
+ "modified": "2021-05-11 13:22:40.704253",
  "modified_by": "Administrator",
  "module": "ERPNext E-Invoicing",
  "name": "E Invoice",
