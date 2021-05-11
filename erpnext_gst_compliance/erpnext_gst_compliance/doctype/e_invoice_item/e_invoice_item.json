@@ -67,7 +67,9 @@
    "fieldname": "quantity",
    "fieldtype": "Float",
    "in_list_view": 1,
-   "label": "Quantity"
+   "label": "Quantity",
+   "precision": 3,
+   "non_negative": 1
   },
   {
    "fieldname": "unit",
@@ -78,13 +80,17 @@
    "fieldname": "rate",
    "fieldtype": "Currency",
    "in_list_view": 1,
-   "label": "Rate"
+   "label": "Rate",
+   "precision": 3,
+   "non_negative": 1
   },
   {
    "fieldname": "amount",
    "fieldtype": "Currency",
    "in_list_view": 1,
-   "label": "Amount"
+   "label": "Amount",
+   "precision": 2,
+   "non_negative": 1
   },
   {
    "fieldname": "column_break_11",
@@ -93,12 +99,16 @@
   {
    "fieldname": "discount",
    "fieldtype": "Currency",
-   "label": "Discount"
+   "label": "Discount",
+   "precision": 2,
+   "non_negative": 1
   },
   {
    "fieldname": "taxable_value",
    "fieldtype": "Currency",
-   "label": "Taxable Value"
+   "label": "Taxable Value",
+   "precision": 2,
+   "non_negative": 1
   },
   {
    "fieldname": "tax_details_section",
@@ -108,22 +118,30 @@
   {
    "fieldname": "gst_rate",
    "fieldtype": "Float",
-   "label": "GST Rate"
+   "label": "GST Rate",
+   "precision": 3,
+   "non_negative": 1
   },
   {
    "fieldname": "cgst_amount",
    "fieldtype": "Currency",
-   "label": "CGST Amount"
+   "label": "CGST Amount",
+   "precision": 2,
+   "non_negative": 1
   },
   {
    "fieldname": "sgst_amount",
    "fieldtype": "Currency",
-   "label": "SGST Amount"
+   "label": "SGST Amount",
+   "precision": 2,
+   "non_negative": 1
   },
   {
    "fieldname": "igst_amount",
    "fieldtype": "Currency",
-   "label": "IGST Amount"
+   "label": "IGST Amount",
+   "precision": 2,
+   "non_negative": 1
   },
   {
    "fieldname": "column_break_19",
@@ -132,22 +150,30 @@
   {
    "fieldname": "cess_rate",
    "fieldtype": "Float",
-   "label": "Cess Rate"
+   "label": "Cess Rate",
+   "precision": 3,
+   "non_negative": 1
   },
   {
    "fieldname": "cess_amount",
    "fieldtype": "Currency",
-   "label": "Cess Amount"
+   "label": "Cess Amount",
+   "precision": 2,
+   "non_negative": 1
   },
   {
    "fieldname": "cess_nadv_amount",
    "fieldtype": "Currency",
-   "label": "Cess Non-Advol Amount"
+   "label": "Cess Non-Advol Amount",
+   "precision": 2,
+   "non_negative": 1
   },
   {
    "fieldname": "other_charges",
    "fieldtype": "Currency",
-   "label": "Other Charges"
+   "label": "Other Charges",
+   "precision": 2,
+   "non_negative": 1
   },
   {
    "fieldname": "section_break_24",
@@ -156,13 +182,15 @@
   {
    "fieldname": "total_item_value",
    "fieldtype": "Currency",
-   "label": "Total Item Value"
+   "label": "Total Item Value",
+   "precision": 2,
+   "non_negative": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2021-05-08 15:26:07.228112",
+ "modified": "2021-05-11 13:22:07.228112",
  "modified_by": "Administrator",
  "module": "ERPNext GST Compliance",
  "name": "E Invoice Item",

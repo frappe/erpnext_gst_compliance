@@ -4,7 +4,7 @@
 
 from __future__ import unicode_literals
 
-from json import loads, dumps
+from json import loads
 
 import frappe
 from frappe import _
@@ -266,15 +266,205 @@ class EInvoice(Document):
 				frappe.throw(_('E-Way Bill cannot be generated for Credit Notes & Debit Notes. Please clear fields in the Transporter Section of the invoice.'),
 					title=_('Invalid Fields'))
 
-			mode_of_transport = {'Road': '1', 'Air': '2', 'Rail': '3', 'Ship': '4'}
-			vehicle_type = {'': '', 'Regular': 'R', 'Over Dimensional Cargo (ODC)': 'O'}
+	def get_einvoice_json(self):
+		einvoice_json = {
+			"Version": self.version,
+			"TranDtls": {
+				"TaxSch": self.tax_scheme,
+				"SupTyp": self.supply_type,
+				"RegRev": "Y" if self.reverse_charge else "N",
+				"EcmGstin": self.ecommerce_gstin,
+				"IgstOnIntra": "Y" if self.igst_on_intra else "N"
+			},
+			"DocDtls": {
+				"Typ": self.invoice_type,
+				"No": self.invoice,
+				"Dt": self.invoice_date
+			}
+		}
 
-			self.tranporter_gstin = self.sales_invoice.gst_transporter_id,
-			self.transporter_name = self.sales_invoice.transporter_name,
-			self.mode_of_transport = mode_of_transport[self.sales_invoice.mode_of_transport],
-			self.distance = self.sales_invoice.distance or 0,
-			self.transport_document_no = self.sales_invoice.lr_no,
-			self.transport_document_date = format_date(self.sales_invoice.lr_date, 'dd/mm/yyyy'),
-			self.vehicle_no = self.sales_invoice.vehicle_no,
-			self.vehicle_type = vehicle_type[self.sales_invoice.gst_vehicle_type]
+		einvoice_json.update(self.get_party_address_json())
+		einvoice_json.update(self.get_item_list_json())
+		einvoice_json.update(self.get_invoice_value_json())
+		einvoice_json.update(self.get_payment_details_json())
+		einvoice_json.update(self.get_return_details_json())
+		einvoice_json.update(self.get_export_details_json())
+		einvoice_json.update(self.get_ewaybill_details_json())
+
+		return einvoice_json
+
+	def get_party_address_json(self):
+		addresses = {
+			"SellerDtls": {
+				"Gstin": self.seller_gstin,
+				"LglNm": self.seller_legal_name,
+				"TrdNm": self.seller_trade_name,
+				"Addr1": self.seller_address_line_1,
+				"Addr2": self.seller_address_line_2,
+				"Loc": self.seller_location,
+				"Pin": self.seller_pincode,
+				"Stcd": self.seller_state_code,
+				"Ph": self.seller_phone,
+				"Em": self.seller_email
+			},
+			"BuyerDtls": {
+				"Gstin": self.buyer_gstin,
+				"LglNm": self.buyer_legal_name,
+				"TrdNm": self.buyer_trade_name,
+				"Pos": self.buyer_place_of_supply,
+				"Addr1": self.buyer_address_line_1,
+				"Addr2": self.buyer_address_line_2,
+				"Loc": self.buyer_location,
+				"Pin": self.buyer_pincode,
+				"Stcd": self.buyer_state_code,
+				"Ph": self.buyer_phone,
+				"Em": self.buyer_email
+			}
+		}
+
+		if self.dispatch_legal_name:
+			addresses.update({
+				"DispDtls": {
+					"Nm": self.dispatch_legal_name,
+					"Addr1": self.dispatch_address_line_1,
+					"Addr2": self.dispatch_address_line_2,
+					"Loc": self.dispatch_location,
+					"Pin": self.dispatch_pincode,
+					"Stcd": self.dispatch_state_code
+				}
+			})
+
+		if self.shipping_legal_name:
+			addresses.update({
+				"ShipDtls": {
+					"Gstin": self.shipping_gstin,
+					"LglNm": self.shippping_legal_name,
+					"TrdNm": self.shipping_trade_name,
+					"Pos": self.shipping_place_of_supply,
+					"Addr1": self.shipping_address_line_1,
+					"Addr2": self.shipping_address_line_2,
+					"Loc": self.shipping_location,
+					"Pin": self.shipping_pincode,
+					"Stcd": self.shipping_state_code
+				}
+			})
+
+		return addresses
+
+	def get_item_list_json(self):
+		item_list = []
+		for row in self.items:
+			item = {
+				"SlNo": row.idx,
+				"PrdDesc": row.item_name,
+				"IsServc": row.is_service_item,
+				"HsnCd": row.hsn_code,
+				"Qty": row.quantity,
+				"Unit": row.unit,
+				"UnitPrice": row.rate,
+				"TotAmt": row.amount,
+				"Discount": row.discount,
+				"AssAmt": row.taxable_value,
+				"GstRt": row.gst_rate,
+				"IgstAmt": row.igst_amount,
+				"CgstAmt": row.cgst_amount,
+				"SgstAmt": row.sgst_amount,
+				"CesRt": row.cess_rate,
+				"CesAmt": row.cess_amount,
+				"CesNonAdvlAmt": row.cess_nadv_amount,
+				"OthChrg": row.other_charges,
+				"TotItemVal": row.total_item_value
+			}
+			item_list.append(item)
+		return {
+			"ItemList": item_list
+		}
+
+	def get_invoice_value_json(self):
+		return {
+			"ValDtls": {
+				"AssVal": self.ass_value,
+				"CgstVal": self.cgst_value,
+				"SgstVal": self.sgst_value,
+				"IgstVal": self.igst_value,
+				"CesVal": self.cess_value,
+				"StCesVal": self.state_cess_value,
+				"Discount": self.invoice_discount,
+				"OthChrg": self.other_charges,
+				"RndOffAmt": self.round_off_amount,
+				"TotInvVal": self.base_invoice_value,
+				"TotInvValFc": self.invoice_value
+			}
+		}
+
+	def get_payment_details_json(self):
+		if not self.payee_name:
+			return {}
+
+		return {
+			"PayDtls": {
+				"Nm": self.payee_name,
+				"AccDet": self.account_detail,
+				"Mode": self.mode,
+				"FinInsBr": self.branch_or_ifsc,
+				"PayTerm": self.payment_term,
+				"CrDay": self.credit_days,
+				"PaidAmt": self.paid_amount,
+				"PaymtDue": self.payment_due
+			},
+		}
+
+	def get_return_details_json(self):
+		if not self.previous_document_no:
+			return {}
+
+		return {
+			"RefDtls": {
+				"PrecDocDtls": [
+					{
+						"InvNo": self.previous_document_no,
+						"InvDt": self.previous_document_date
+					}
+				]
+			}
+		}
+
+	def get_export_details_json(self):
+		if not self.export_bill_no:
+			return {}
+
+		return {
+			"ExpDtls": {
+				"ShipBNo": self.export_bill_no,
+				"ShipBDt": self.export_bill_date,
+				"Port": self.port_code,
+				"RefClm": "Y" if self.claiming_refund else "N",
+				"ForCur": self.currency_code,
+				"CntCode": self.country_code
+			}
+		}
+
+	def get_ewaybill_details_json(self):
+		if not self.transporter_name:
+			return {}
+
+		mode_of_transport = {'Road': '1', 'Air': '2', 'Rail': '3', 'Ship': '4'}
+		vehicle_type = {'': '', 'Regular': 'R', 'Over Dimensional Cargo (ODC)': 'O'}
+
+		mode_of_transport = mode_of_transport[self.mode_of_transport]
+		vehicle_type = vehicle_type[self.vehicle_type]
+
+		return {
+			"EwbDtls": {
+				"TransId": self.transporter_gstin,
+				"TransName": self.transporter_name,
+				"Distance": self.distance or 0,
+				"TransDocNo": self.transport_document_no,
+				"TransDocDt": self.transport_document_date,
+				"VehNo": self.vehicle_no,
+				"VehType": vehicle_type,
+				"TransMode": mode_of_transport
+			}
+		}
+
 
