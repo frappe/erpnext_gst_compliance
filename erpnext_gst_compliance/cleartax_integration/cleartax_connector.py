@@ -45,9 +45,9 @@ class CleartaxConnector:
 
 	def get_headers(self):
 		return frappe._dict({
-			"x-cleartax-auth-token": self.auth_token
-			"x-cleartax-product": "EInvoice"
-			"Content-Type": "application/json"
-			"owner_id": self.business.owner_id
+			"x-cleartax-auth-token": self.settings.get_password('auth_token'),
+			"x-cleartax-product": "EInvoice",
+			"Content-Type": "application/json",
+			"owner_id": self.business.get_password('owner_id'),
 			"gstin": self.gstin
 		})
