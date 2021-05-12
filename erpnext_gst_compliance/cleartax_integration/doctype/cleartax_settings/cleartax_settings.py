@@ -5,11 +5,14 @@
 from __future__ import unicode_literals
 
 import frappe
-from frappe import _, bold
+from frappe import _
 from frappe.model.document import Document
 
 class CleartaxSettings(Document):
+
 	def validate(self):
+		if not self.enabled: return
+
 		for row in self.credentials:
 			gstin_company = self.get_company_linked_with_gstin(row.gstin)
 			if not gstin_company:
