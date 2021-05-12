@@ -6,6 +6,15 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "section_break_1",
+  "irn",
+  "ack_no",
+  "ack_date",
+  "ewaybill",
+  "column_break_5",
+  "qrcode_path",
+  "qrcode",
+  "ewaybill_validity",
   "version",
   "transaction_details_section",
   "tax_scheme",
@@ -123,6 +132,7 @@
    "hidden": 1,
    "label": "Version",
    "precision": "1",
+   "print_hide": 1,
    "read_only": 1
   },
   {
@@ -249,7 +259,7 @@
   },
   {
    "fieldname": "seller_pincode",
-   "fieldtype": "Int",
+   "fieldtype": "Data",
    "label": "Pincode",
    "reqd": 1
   },
@@ -319,7 +329,7 @@
   },
   {
    "fieldname": "buyer_pincode",
-   "fieldtype": "Int",
+   "fieldtype": "Data",
    "label": "Pincode",
    "reqd": 1
   },
@@ -376,7 +386,7 @@
   },
   {
    "fieldname": "dispatch_pincode",
-   "fieldtype": "Int",
+   "fieldtype": "Data",
    "label": "Pincode",
    "mandatory_depends_on": "dispatch_legal_name"
   },
@@ -749,7 +759,7 @@
   },
   {
    "fieldname": "shipping_pincode",
-   "fieldtype": "Int",
+   "fieldtype": "Data",
    "label": "Pincode",
    "mandatory_depends_on": "shippping_legal_name"
   },
@@ -758,12 +768,63 @@
    "fieldtype": "Data",
    "label": "State Code",
    "mandatory_depends_on": "shippping_legal_name"
+  },
+  {
+   "fieldname": "section_break_1",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "irn",
+   "fieldtype": "Data",
+   "label": "IRN",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ack_no",
+   "fieldtype": "Data",
+   "label": "Acknowlegment No.",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ack_date",
+   "fieldtype": "Data",
+   "label": "Acknowledgment Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ewaybill",
+   "fieldtype": "Data",
+   "label": "E-Way Bill No.",
+   "read_only": 1
+  },
+  {
+   "fieldname": "ewaybill_validity",
+   "fieldtype": "Data",
+   "label": "E-Way Bill Validity",
+   "read_only": 1
+  },
+  {
+   "fieldname": "qrcode_path",
+   "fieldtype": "Attach Image",
+   "hidden": 1,
+   "label": "QRCode File Path",
+   "read_only": 1
+  },
+  {
+   "fieldname": "qrcode",
+   "fieldtype": "Image",
+   "label": "QRCode",
+   "options": "qrcode_path"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-05-11 16:06:57.367022",
+ "modified": "2021-05-12 16:13:57.698941",
  "modified_by": "Administrator",
  "module": "ERPNext E-Invoicing",
  "name": "E Invoice",

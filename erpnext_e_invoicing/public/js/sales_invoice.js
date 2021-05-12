@@ -12,9 +12,19 @@ frappe.ui.form.on('Sales Invoice', {
 			}
 		};
 		
+		const e_invoicing_settings_path = 'erpnext_e_invoicing.erpnext_e_invoicing.doctype.e_invoicing_settings.e_invoicing_settings';
 
 		if (!irn && !__unsaved) {
 			// Generate IRN
+			add_einvoice_button(__('Generate IRN Test'), async () => {
+				await frm.reload_doc();
+				frappe.call({
+					method: e_invoicing_settings_path + '.generate_irn',
+					args: { sales_invoice: frm.doc },
+					callback: () => frm.reload_doc(),
+					freeze: true
+				});
+			});
 		}
 
 		if (irn && !irn_cancelled && !ewaybill) {

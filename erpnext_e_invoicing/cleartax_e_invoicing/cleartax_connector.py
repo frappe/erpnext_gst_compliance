@@ -1,7 +1,10 @@
+import os
+import io
 import frappe
 
 from frappe import _
 from json import dumps
+from pyqrcode import create as qrcreate
 from erpnext_e_invoicing.utils import log_exception
 from frappe.integrations.utils import make_post_request, make_get_request, make_put_request
 from erpnext_e_invoicing.erpnext_e_invoicing.doctype.e_invoice.e_invoice import create_einvoice
@@ -89,14 +92,90 @@ class CleartaxConnector:
 		return response
 
 	@log_exception
-	def generate_irn(self, invoice_number):
+	def make_irn_request(self, invoice_number):
 		headers = self.get_headers()
 		url = self.endpoints.generate_irn
 
-		einvoice = create_einvoice(invoice_number)
-		einvoice_json = einvoice.get_einvoice_json()
+		self.einvoice = create_einvoice(invoice_number)
+		einvoice_json = self.einvoice.get_einvoice_json()
 
 		payload = [{"transaction": einvoice_json}]
 		payload = dumps(payload, indent=4)
 
 		response = self.make_request('put', url, headers, payload)
+		# Sample Response -> https://docs.cleartax.in/cleartax-for-developers/e-invoicing-api/e-invoicing-api-reference/cleartax-e-invoicing-apis-xml-schema#sample-response
+
+		response = self.sanitize_response(response)
+		if response.get('Success'):
+			self.handle_successful_irn_generation(response)
+
+		return response
+
+	@staticmethod
+	def generate_irn(sales_invoice):
+		business_gstin = sales_invoice.get('company_gstin')
+		connector = CleartaxConnector(business_gstin)
+		response = connector.make_irn_request(sales_invoice.name)
+		success, errors = response.get('Success'), response.get('Errors')
+
+		return success, errors
+
+	def sanitize_response(self, response):
+		sanitized_response = []
+		for entry in response:
+			govt_response = frappe._dict(entry.get('govt_response', {}))
+			success = govt_response.get('Success', "N")
+
+			if success == "Y":
+				# return irn & other info
+				govt_response.update({'Success': True})
+				sanitized_response.append(govt_response)
+			else:
+				# return error message
+				error_details = govt_response.get('ErrorDetails', [])
+				error_list = [d.get('error_message') for d in error_details]
+				sanitized_response.append({
+					'Success': False,
+					'Errors': error_list
+				})
+
+		return sanitized_response[0] if len(sanitized_response) == 1 else sanitized_response
+
+	def handle_successful_irn_generation(self, response):
+		irn = response.get('Irn')
+		ack_no = response.get('AckNo')
+		ack_date = response.get('AckDt')
+		ewaybill = response.get('EwbNo')
+		ewaybill_validity = response.get('EwbValidTill')
+		qrcode = self.generate_qrcode(response.get('SignedQRCode'))
+
+		self.einvoice.update({
+			'irn': irn,
+			'ack_no': ack_no,
+			'ack_date': ack_date,
+			'ewaybill': ewaybill,
+			'qrcode_path': qrcode,
+			'ewaybill_validity': ewaybill_validity
+		})
+		self.einvoice.flags.ignore_permissions = 1
+		self.einvoice.submit()
+
+	def generate_qrcode(self, signed_qrcode):
+		doctype = self.einvoice.doctype
+		docname = self.einvoice.name
+		filename = '{} - QRCode.png'.format(docname).replace(os.path.sep, "__")
+
+		qr_image = io.BytesIO()
+		url = qrcreate(signed_qrcode, error='L')
+		url.png(qr_image, scale=2, quiet_zone=1)
+		_file = frappe.get_doc({
+			"doctype": "File",
+			"file_name": filename,
+			"attached_to_doctype": doctype,
+			"attached_to_name": docname,
+			"attached_to_field": "qrcode_image",
+			"is_private": 1,
+			"content": qr_image.getvalue()
+		})
+		_file.save()
+		return _file.file_url
