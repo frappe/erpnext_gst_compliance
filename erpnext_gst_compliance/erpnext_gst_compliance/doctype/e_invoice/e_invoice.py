@@ -302,7 +302,7 @@ class EInvoice(Document):
 				"TrdNm": self.seller_trade_name,
 				"Addr1": self.seller_address_line_1,
 				"Loc": self.seller_location,
-				"Pin": self.seller_pincode,
+				"Pin": cint(self.seller_pincode),
 				"Stcd": self.seller_state_code,
 				"Ph": self.seller_phone,
 				"Em": self.seller_email
@@ -321,7 +321,7 @@ class EInvoice(Document):
 				"Addr1": self.buyer_address_line_1,
 				"Addr2": self.buyer_address_line_2,
 				"Loc": self.buyer_location,
-				"Pin": self.buyer_pincode,
+				"Pin": cint(self.buyer_pincode),
 				"Stcd": self.buyer_state_code,
 				"Ph": self.buyer_phone,
 				"Em": self.buyer_email
@@ -337,7 +337,7 @@ class EInvoice(Document):
 					"Nm": self.dispatch_legal_name,
 					"Addr1": self.dispatch_address_line_1,
 					"Loc": self.dispatch_location,
-					"Pin": self.dispatch_pincode,
+					"Pin": cint(self.dispatch_pincode),
 					"Stcd": self.dispatch_state_code
 				}
 			}
@@ -356,7 +356,7 @@ class EInvoice(Document):
 					"Addr1": self.shipping_address_line_1,
 					"Addr2": self.shipping_address_line_2,
 					"Loc": self.shipping_location,
-					"Pin": self.shipping_pincode,
+					"Pin": cint(self.shipping_pincode),
 					"Stcd": self.shipping_state_code
 				}
 			}
@@ -460,10 +460,10 @@ class EInvoice(Document):
 		}
 
 	def get_ewaybill_details_json(self):
-		if not self.transporter_name:
+		if not self.sales_invoice.transporter:
 			return {}
 
-		mode_of_transport = {'Road': '1', 'Air': '2', 'Rail': '3', 'Ship': '4'}
+		mode_of_transport = {'': '', 'Road': '1', 'Air': '2', 'Rail': '3', 'Ship': '4'}
 		vehicle_type = {'': '', 'Regular': 'R', 'Over Dimensional Cargo (ODC)': 'O'}
 
 		mode_of_transport = mode_of_transport[self.mode_of_transport]

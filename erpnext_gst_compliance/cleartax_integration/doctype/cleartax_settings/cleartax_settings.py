@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
+from erpnext_e_invoicing.cleartax_e_invoicing.cleartax_connector import CleartaxConnector
 
 class CleartaxSettings(Document):
 
@@ -27,3 +28,6 @@ class CleartaxSettings(Document):
 		""", (gstin))
 
 		return company_name[0][0] if company_name and len(company_name) > 0 else None
+
+	def get_connector(self):
+		return CleartaxConnector
