@@ -11,6 +11,8 @@
   "ack_no",
   "ack_date",
   "ewaybill",
+  "irn_cancelled",
+  "irn_cancel_date",
   "column_break_5",
   "qrcode_path",
   "qrcode",
@@ -780,12 +782,14 @@
    "read_only": 1
   },
   {
+   "depends_on": "eval: !doc.irn_cancelled",
    "fieldname": "ack_no",
    "fieldtype": "Data",
    "label": "Acknowlegment No.",
    "read_only": 1
   },
   {
+   "depends_on": "eval: !doc.irn_cancelled",
    "fieldname": "ack_date",
    "fieldtype": "Data",
    "label": "Acknowledgment Date",
@@ -796,12 +800,14 @@
    "fieldtype": "Column Break"
   },
   {
+   "depends_on": "eval: !doc.irn_cancelled",
    "fieldname": "ewaybill",
    "fieldtype": "Data",
    "label": "E-Way Bill No.",
    "read_only": 1
   },
   {
+   "depends_on": "eval: !doc.irn_cancelled",
    "fieldname": "ewaybill_validity",
    "fieldtype": "Data",
    "label": "E-Way Bill Validity",
@@ -815,16 +821,30 @@
    "read_only": 1
   },
   {
+   "depends_on": "eval: !doc.irn_cancelled",
    "fieldname": "qrcode",
    "fieldtype": "Image",
    "label": "QRCode",
    "options": "qrcode_path"
+  },
+  {
+   "default": "0",
+   "depends_on": "irn_cancelled",
+   "fieldname": "irn_cancelled",
+   "fieldtype": "Check",
+   "label": "IRN Cancelled"
+  },
+  {
+   "depends_on": "irn_cancelled",
+   "fieldname": "irn_cancel_date",
+   "fieldtype": "Data",
+   "label": "IRN Cancellation Date"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-05-12 16:13:57.698941",
+ "modified": "2021-05-13 14:49:19.015667",
  "modified_by": "Administrator",
  "module": "ERPNext GST Compliance",
  "name": "E Invoice",

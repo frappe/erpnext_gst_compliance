@@ -14,22 +14,42 @@ frappe.ui.form.on('Sales Invoice', {
 		
 		const e_invoicing_settings_path = 'erpnext_e_invoicing.erpnext_e_invoicing.doctype.e_invoicing_settings.e_invoicing_settings';
 
-		if (!irn && !__unsaved) {
-			// Generate IRN
-			add_einvoice_button(__('Generate IRN Test'), async () => {
-				await frm.reload_doc();
-				frappe.call({
-					method: e_invoicing_settings_path + '.generate_irn',
-					args: { sales_invoice: frm.doc },
-					callback: () => frm.reload_doc(),
-					freeze: true
-				});
+		// Generate IRN
+		add_einvoice_button(__('Generate IRN'), async () => {
+			await frm.reload_doc();
+			frappe.call({
+				method: e_invoicing_settings_path + '.generate_irn',
+				args: { sales_invoice: frm.doc },
+				callback: () => frm.reload_doc(),
+				freeze: true
 			});
-		}
+		});
 
-		if (irn && !irn_cancelled && !ewaybill) {
-			// Cancel IRN
-		}
+		// Cancel IRN
+		const fields = get_irn_cancellation_fields();
+		const action = () => {
+			const d = new frappe.ui.Dialog({
+				title: __("Cancel IRN"),
+				fields: fields,
+				primary_action: function() {
+					const data = d.get_values();
+					frappe.call({
+						method: e_invoicing_settings_path + '.cancel_irn',
+						args: {
+							sales_invoice: frm.doc,
+							reason: data.reason.split('-')[0],
+							remark: data.remark
+						},
+						freeze: true,
+						callback: () => frm.reload_doc() || d.hide(),
+						error: () => d.hide()
+					});
+				},
+				primary_action_label: __('Submit')
+			});
+			d.show();
+		};
+		add_einvoice_button(__('Cancel IRN'), action);
 
 		if (irn && !irn_cancelled && !ewaybill) {
 			// Generate E-Way Bill
@@ -45,9 +65,29 @@ const get_einvoice_eligibility = async (doc) => {
 	frappe.dom.freeze();
 	const { message: invoice_eligible } = await frappe.call({
 		method: 'erpnext_e_invoicing.utils.validate_einvoice_eligibility',
-		args: { doc: doc }
+		args: { doc: doc },
+		debounce: 2000
 	});
 	frappe.dom.unfreeze();
 
 	return invoice_eligible;
+}
+
+const get_irn_cancellation_fields = () => {
+	return [
+		{
+			"label": "Reason",
+			"fieldname": "reason",
+			"fieldtype": "Select",
+			"reqd": 1,
+			"default": "1-Duplicate",
+			"options": ["1-Duplicate", "2-Data Entry Error", "3-Order Cancelled", "4-Other"]
+		},
+		{
+			"label": "Remark",
+			"fieldname": "remark",
+			"fieldtype": "Data",
+			"reqd": 1
+		}
+	];
 }

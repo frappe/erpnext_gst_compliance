@@ -492,8 +492,10 @@ def create_einvoice(sales_invoice):
 	# to fetch details from 'fetch_from' fields
 	einvoice._action = 'save'
 	einvoice._validate_links()
-
 	einvoice.fetch_invoice_details()
 	einvoice.save()
 
 	return einvoice
+
+def get_einvoice(sales_invoice):
+	return frappe.get_doc('E Invoice', sales_invoice)
