@@ -7,7 +7,7 @@ from json import dumps
 from pyqrcode import create as qrcreate
 from erpnext_e_invoicing.utils import log_exception
 from frappe.integrations.utils import make_post_request, make_get_request, make_put_request
-from erpnext_e_invoicing.erpnext_e_invoicing.doctype.e_invoice.e_invoice import create_einvoice
+from erpnext_e_invoicing.erpnext_e_invoicing.doctype.e_invoice.e_invoice import create_einvoice, get_einvoice
 
 class CleartaxConnector:
 	def __init__(self, gstin):
@@ -113,7 +113,7 @@ class CleartaxConnector:
 
 	@staticmethod
 	def generate_irn(sales_invoice):
-		business_gstin = sales_invoice.get('company_gstin')
+		business_gstin = sales_invoice.company_gstin  # fetch from address?
 		connector = CleartaxConnector(business_gstin)
 		response = connector.make_irn_request(sales_invoice.name)
 		success, errors = response.get('Success'), response.get('Errors')
@@ -169,13 +169,49 @@ class CleartaxConnector:
 		url = qrcreate(signed_qrcode, error='L')
 		url.png(qr_image, scale=2, quiet_zone=1)
 		_file = frappe.get_doc({
-			"doctype": "File",
-			"file_name": filename,
-			"attached_to_doctype": doctype,
-			"attached_to_name": docname,
-			"attached_to_field": "qrcode_image",
-			"is_private": 1,
-			"content": qr_image.getvalue()
+			'doctype': 'File',
+			'file_name': filename,
+			'attached_to_doctype': doctype,
+			'attached_to_name': docname,
+			'attached_to_field': 'qrcode_path',
+			'is_private': 1,
+			'content': qr_image.getvalue()
 		})
 		_file.save()
 		return _file.file_url
+
+	@log_exception
+	def make_cancel_irn_request(self, invoice_number, reason, remark):
+		headers = self.get_headers()
+		url = self.endpoints.cancel_irn
+
+		self.einvoice = get_einvoice(invoice_number)
+		irn = self.einvoice.irn
+
+		payload = [{'irn': irn, 'CnlRsn': reason, 'CnlRem': remark}]
+		payload = dumps(payload, indent=4)
+
+		response = self.make_request('put', url, headers, payload)
+		# Sample Response -> https://docs.cleartax.in/cleartax-for-developers/e-invoicing-api/e-invoicing-api-reference/cleartax-e-invoicing-apis-xml-schema#sample-response-1
+
+		response = self.sanitize_response(response)
+		if response.get('Success'):
+			self.handle_successful_irn_cancellation(response)
+
+		return response
+
+	def handle_successful_irn_cancellation(self, response):
+		self.einvoice.irn_cancelled = 1
+		self.einvoice.irn_cancel_date = response.get('CancelDate')
+		self.einvoice.flags.ignore_validate_update_after_submit = 1
+		self.einvoice.flags.ignore_permissions = 1
+		self.einvoice.save()
+
+	@staticmethod
+	def cancel_irn(sales_invoice, reason, remark):
+		business_gstin = sales_invoice.company_gstin # fetch from address?
+		connector = CleartaxConnector(business_gstin)
+		response = connector.make_cancel_irn_request(sales_invoice.name, reason, remark)
+		success, errors = response.get('Success'), response.get('Errors')
+
+		return success, errors
