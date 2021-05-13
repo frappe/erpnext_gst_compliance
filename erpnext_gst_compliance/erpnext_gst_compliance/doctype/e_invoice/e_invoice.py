@@ -15,7 +15,14 @@ from erpnext.regional.india.utils import get_gst_accounts
 
 class EInvoice(Document):
 	def validate(self):
-		pass
+		self.set_einvoice_in_sales_invoice()
+
+	def set_einvoice_in_sales_invoice(self):
+		if not self.sales_invoice:
+			self.sales_invoice = frappe.get_doc('Sales Invoice', self.invoice)
+		
+		if self.sales_invoice.e_invoice != self.name:
+			self.sales_invoice.db_set('e_invoice', self.name)
 
 	@frappe.whitelist()
 	def fetch_invoice_details(self):
