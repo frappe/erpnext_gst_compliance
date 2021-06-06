@@ -5,7 +5,7 @@ frappe.ui.form.on('E Invoicing Settings', {
 	onload: async (frm) => {
 		let einvoicing_modules = await frappe.db.get_list('Module Def', {
 			filters: {
-				app_name: 'erpnext_e_invoicing'
+				app_name: 'erpnext_gst_compliance'
 			}
 		});
 		if (einvoicing_modules && einvoicing_modules.length) {

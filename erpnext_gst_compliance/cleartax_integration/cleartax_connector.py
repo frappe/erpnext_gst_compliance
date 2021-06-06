@@ -5,9 +5,8 @@ import frappe
 from frappe import _
 from json import dumps
 from pyqrcode import create as qrcreate
-from erpnext_e_invoicing.utils import log_exception
-from frappe.integrations.utils import make_post_request, make_get_request, make_put_request
-from erpnext_e_invoicing.erpnext_e_invoicing.doctype.e_invoice.e_invoice import create_einvoice, get_einvoice
+from erpnext_gst_compliance.utils import log_exception
+from erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.e_invoice import create_einvoice, get_einvoice
 
 class CleartaxConnector:
 	def __init__(self, gstin):

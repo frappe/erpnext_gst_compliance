@@ -6,7 +6,7 @@ import frappe
 from frappe import _
 from frappe.model.document import Document
 from frappe.utils.data import get_link_to_form
-from erpnext_e_invoicing.utils import safe_load_json
+from erpnext_gst_compliance.utils import safe_load_json
 
 class EInvoicingSettings(Document):
 	def validate(self):

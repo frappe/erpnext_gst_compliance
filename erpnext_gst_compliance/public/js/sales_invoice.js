@@ -12,7 +12,7 @@ frappe.ui.form.on('Sales Invoice', {
 			}
 		};
 		
-		const e_invoicing_settings_path = 'erpnext_e_invoicing.erpnext_e_invoicing.doctype.e_invoicing_settings.e_invoicing_settings';
+		const e_invoicing_settings_path = 'erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoicing_settings.e_invoicing_settings';
 
 		// Generate IRN
 		add_einvoice_button(__('Generate IRN'), async () => {
@@ -64,7 +64,7 @@ frappe.ui.form.on('Sales Invoice', {
 const get_einvoice_eligibility = async (doc) => {
 	frappe.dom.freeze();
 	const { message: invoice_eligible } = await frappe.call({
-		method: 'erpnext_e_invoicing.utils.validate_einvoice_eligibility',
+		method: 'erpnext_gst_compliance.utils.validate_einvoice_eligibility',
 		args: { doc: doc },
 		debounce: 2000
 	});

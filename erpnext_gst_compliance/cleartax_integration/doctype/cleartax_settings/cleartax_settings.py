@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import frappe
 from frappe import _
 from frappe.model.document import Document
-from erpnext_e_invoicing.cleartax_e_invoicing.cleartax_connector import CleartaxConnector
+from erpnext_gst_compliance.cleartax_integration.cleartax_connector import CleartaxConnector
 
 class CleartaxSettings(Document):
 
