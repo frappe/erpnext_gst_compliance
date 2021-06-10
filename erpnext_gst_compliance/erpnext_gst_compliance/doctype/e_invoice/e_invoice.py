@@ -132,13 +132,17 @@ class EInvoice(Document):
 		discount_applied_on_net_total = self.get_invoice_discount_type() == 'Net Total'
 
 		for item in self.sales_invoice.items:
-			is_stock_item = frappe.db.get_value('Item', item.item_code, 'is_stock_item')
+			if not item.gst_hsn_code:
+				frappe.throw(_('Row #{}: Item {} must have HSN code set to be able to generate e-invoice.')
+					.format(item.idx, item.item_code))
+
+			is_service_item = item.gst_hsn_code[:2] == "99"
 			discount = abs(item.base_amount - item.base_net_amount) if discount_applied_on_net_total else 0
 
 			einvoice_item = frappe._dict({
 				'item_code': item.item_code,
 				'item_name': item.item_name,
-				'is_service_item': not is_stock_item,
+				'is_service_item': is_service_item,
 				'hsn_code': item.gst_hsn_code,
 				'quantity': abs(item.qty),
 				'discount': discount,
