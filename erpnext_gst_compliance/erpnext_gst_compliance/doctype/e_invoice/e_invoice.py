@@ -23,6 +23,10 @@ class EInvoice(Document):
 		
 		if self.sales_invoice.e_invoice != self.name:
 			self.sales_invoice.db_set('e_invoice', self.name)
+			self.sales_invoice.db_set('e_invoice_status', self.status)
+	
+	def on_submit(self):
+		self.sales_invoice.db_set('e_invoice_status', self.status)
 
 	@frappe.whitelist()
 	def fetch_invoice_details(self):

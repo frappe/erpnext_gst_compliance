@@ -6,6 +6,7 @@ from frappe import _
 from json import dumps
 from pyqrcode import create as qrcreate
 from erpnext_gst_compliance.utils import log_exception
+from frappe.integrations.utils import make_post_request, make_get_request, make_put_request
 from erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.e_invoice import create_einvoice, get_einvoice
 
 class CleartaxConnector:
@@ -141,6 +142,7 @@ class CleartaxConnector:
 		return sanitized_response[0] if len(sanitized_response) == 1 else sanitized_response
 
 	def handle_successful_irn_generation(self, response):
+		status = 'IRN Generated'
 		irn = response.get('Irn')
 		ack_no = response.get('AckNo')
 		ack_date = response.get('AckDt')
@@ -150,6 +152,7 @@ class CleartaxConnector:
 
 		self.einvoice.update({
 			'irn': irn,
+			'status': status,
 			'ack_no': ack_no,
 			'ack_date': ack_date,
 			'ewaybill': ewaybill,
@@ -202,6 +205,7 @@ class CleartaxConnector:
 	def handle_successful_irn_cancellation(self, response):
 		self.einvoice.irn_cancelled = 1
 		self.einvoice.irn_cancel_date = response.get('CancelDate')
+		self.einvoice.status = 'IRN Cancelled'
 		self.einvoice.flags.ignore_validate_update_after_submit = 1
 		self.einvoice.flags.ignore_permissions = 1
 		self.einvoice.save()

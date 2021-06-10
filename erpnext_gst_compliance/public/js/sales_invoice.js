@@ -4,58 +4,68 @@ frappe.ui.form.on('Sales Invoice', {
 
 		if (!invoice_eligible) return;
 
-		const { irn, irn_cancelled, ewaybill, eway_bill_cancelled, __unsaved } = frm.doc;
+		const { e_invoice_status } = frm.doc;
 
 		const add_einvoice_button = (label, action) => {
 			if (!frm.custom_buttons[label]) {
-				frm.add_custom_button(label, action, __('Cleartax'));
+				frm.add_custom_button(label, action, __('E-Invoicing'));
 			}
 		};
 		
-		const e_invoicing_settings_path = 'erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoicing_settings.e_invoicing_settings';
+		const e_invoicing_controller = 'erpnext_gst_compliance.erpnext_gst_compliance.e_invoicing_controller';
 
-		// Generate IRN
-		add_einvoice_button(__('Generate IRN'), async () => {
-			await frm.reload_doc();
-			frappe.call({
-				method: e_invoicing_settings_path + '.generate_irn',
-				args: { sales_invoice: frm.doc },
-				callback: () => frm.reload_doc(),
-				freeze: true
+		if (!e_invoice_status || e_invoice_status == 'IRN Pending') {
+			// Generate IRN
+			add_einvoice_button(__('Generate IRN'), async () => {
+				if (frm.is_dirty()) return raise_form_is_dirty_error();
+
+				await frm.reload_doc();
+				frappe.call({
+					method: e_invoicing_controller + '.generate_irn',
+					args: { sales_invoice: frm.doc },
+					callback: () => frm.reload_doc(),
+					error: () => frm.reload_doc(),
+					freeze: true
+				});
 			});
-		});
+		}
 
-		// Cancel IRN
-		const fields = get_irn_cancellation_fields();
-		const action = () => {
-			const d = new frappe.ui.Dialog({
-				title: __("Cancel IRN"),
-				fields: fields,
-				primary_action: function() {
-					const data = d.get_values();
-					frappe.call({
-						method: e_invoicing_settings_path + '.cancel_irn',
-						args: {
-							sales_invoice: frm.doc,
-							reason: data.reason.split('-')[0],
-							remark: data.remark
-						},
-						freeze: true,
-						callback: () => frm.reload_doc() || d.hide(),
-						error: () => d.hide()
-					});
-				},
-				primary_action_label: __('Submit')
-			});
-			d.show();
-		};
-		add_einvoice_button(__('Cancel IRN'), action);
 
-		if (irn && !irn_cancelled && !ewaybill) {
+		if (e_invoice_status == 'IRN Generated') {
+			// Cancel IRN
+			const fields = get_irn_cancellation_fields();
+			const action = () => {
+				if (frm.is_dirty()) return raise_form_is_dirty_error();
+
+				const d = new frappe.ui.Dialog({
+					title: __("Cancel IRN"),
+					fields: fields,
+					primary_action: function() {
+						const data = d.get_values();
+						frappe.call({
+							method: e_invoicing_controller + '.cancel_irn',
+							args: {
+								sales_invoice: frm.doc,
+								reason: data.reason.split('-')[0],
+								remark: data.remark
+							},
+							freeze: true,
+							callback: () => frm.reload_doc() || d.hide(),
+							error: () => d.hide()
+						});
+					},
+					primary_action_label: __('Submit')
+				});
+				d.show();
+			};
+			add_einvoice_button(__('Cancel IRN'), action);
+		}
+
+		if (e_invoice_status == 'IRN Generated') {
 			// Generate E-Way Bill
 		}
 
-		if (irn && ewaybill && !irn_cancelled && !eway_bill_cancelled) {
+		if (e_invoice_status == 'E-Way Bill Generated') {
 			// Cancel E-Way Bill
 		}
 	}
@@ -90,4 +100,11 @@ const get_irn_cancellation_fields = () => {
 			"reqd": 1
 		}
 	];
+}
+
+const raise_form_is_dirty_error = () => {
+	frappe.throw({
+		message: __('You must save the document before making e-invoicing request.'),
+		title: __('Unsaved Document')
+	});
 }
