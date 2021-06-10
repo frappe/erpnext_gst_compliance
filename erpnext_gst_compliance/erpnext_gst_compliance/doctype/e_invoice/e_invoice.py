@@ -8,8 +8,10 @@ from json import loads
 
 import frappe
 from frappe import _
+from frappe.model import default_fields
 from frappe.model.document import Document
 from frappe.utils.data import cint, format_date
+from frappe.core.doctype.version.version import get_diff
 
 from erpnext.regional.india.utils import get_gst_accounts
 
@@ -493,6 +495,12 @@ class EInvoice(Document):
 			}
 		}
 
+	def sync_with_sales_invoice(self):
+		# to fetch details from 'fetch_from' fields
+		self._action = 'save'
+		self._validate_links()
+		self.fetch_invoice_details()
+
 def create_einvoice(sales_invoice):
 	if frappe.db.exists('E Invoice', sales_invoice):
 		einvoice = frappe.get_doc('E Invoice', sales_invoice)
@@ -500,13 +508,44 @@ def create_einvoice(sales_invoice):
 		einvoice = frappe.new_doc('E Invoice')
 		einvoice.invoice = sales_invoice
 
-	# to fetch details from 'fetch_from' fields
-	einvoice._action = 'save'
-	einvoice._validate_links()
-	einvoice.fetch_invoice_details()
+	einvoice.sync_with_sales_invoice()
 	einvoice.save()
 
 	return einvoice
 
 def get_einvoice(sales_invoice):
 	return frappe.get_doc('E Invoice', sales_invoice)
+
+def validate_sales_invoice_change(doc, method=""):
+	if not doc.e_invoice:
+		return
+	
+	if doc.e_invoice_status == 'IRN Cancelled':
+		return
+
+	if doc.docstatus == 0 and doc._action == 'save':
+		einvoice = get_einvoice(doc.e_invoice)
+		einvoice_copy = frappe.copy_doc(einvoice)
+		einvoice_copy.sync_with_sales_invoice()
+
+		# to ignore changes in default fields
+		einvoice = remove_default_fields(einvoice)
+		diff = get_diff(einvoice, einvoice_copy)
+
+		if diff:
+			frappe.throw(_('You cannot edit the invoice after generating IRN'), title=_('Edit Not Allowed'))
+
+def remove_default_fields(doc):
+	clone = doc.as_dict().copy()
+	for fieldname in clone:
+		value = doc.get(fieldname)
+		if isinstance(value, list):
+			trimmed_child_docs = []
+			for d in value:
+				trimmed_child_docs.append(remove_default_fields(d))
+			doc.set(fieldname, trimmed_child_docs)
+
+		if fieldname in default_fields:
+			doc.set(fieldname, None)
+
+	return doc

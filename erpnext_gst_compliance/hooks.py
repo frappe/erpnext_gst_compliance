@@ -15,6 +15,12 @@ doctype_js = {
 	"Sales Invoice": "public/js/sales_invoice.js"
 }
 
+doc_events = {
+	"Sales Invoice": {
+		"on_update": "erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.e_invoice.validate_sales_invoice_change"
+	}
+}
+
 user_data_fields = [
 	{
 		"doctype": "{doctype_1}",
