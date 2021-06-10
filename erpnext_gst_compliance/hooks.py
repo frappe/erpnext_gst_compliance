@@ -9,6 +9,8 @@ app_color = "grey"
 app_email = "developers@erpnext.com"
 app_license = "MIT"
 
+after_install = "erpnext_gst_compliance.erpnext_gst_compliance.setup.setup"
+
 doctype_js = {
 	"Sales Invoice": "public/js/sales_invoice.js"
 }
