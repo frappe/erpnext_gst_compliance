@@ -69,7 +69,7 @@ class CleartaxConnector:
 		request_log = frappe.get_doc({
 			"doctype": "E Invoice Request Log",
 			"user": frappe.session.user,
-			"reference_invoice": None, # TODO: set invoice reference?
+			"reference_invoice": self.einvoice,
 			"url": url,
 			"headers": dumps(headers, indent=4) if headers else None,
 			"data": dumps(payload, indent=4) if isinstance(payload, dict) else payload,
