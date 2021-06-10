@@ -131,9 +131,17 @@ class CleartaxConnector:
 				govt_response.update({'Success': True})
 				sanitized_response.append(govt_response)
 			else:
-				# return error message
+				# return error message list
 				error_details = govt_response.get('ErrorDetails', [])
-				error_list = [d.get('error_message') for d in error_details]
+				error_list = []
+
+				for d in error_details:
+					if d.get('error_source') == 'CLEARTAX':
+						# cleartax gives back the exact key that causes the error
+						# error_message = "sellerDetails.pinCode : <actual error message>"
+						d['error_message'] = d['error_message'].split(' : ')[-1]
+					error_list.append(d.get('error_message'))
+
 				sanitized_response.append({
 					'Success': False,
 					'Errors': error_list
