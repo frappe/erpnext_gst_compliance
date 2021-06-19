@@ -141,7 +141,6 @@ class EInvoice(Document):
 					.format(item.idx, item.item_code))
 
 			is_service_item = item.gst_hsn_code[:2] == "99"
-			discount = abs(item.base_amount - item.base_net_amount) if discount_applied_on_net_total else 0
 
 			einvoice_item = frappe._dict({
 				'item_code': item.item_code,
@@ -149,10 +148,10 @@ class EInvoice(Document):
 				'is_service_item': is_service_item,
 				'hsn_code': item.gst_hsn_code,
 				'quantity': abs(item.qty),
-				'discount': discount,
+				'discount': 0,
 				'unit': item.uom,
-				'rate': abs((abs(item.taxable_value) - discount) / item.qty),
-				'amount': abs(item.taxable_value) + discount,
+				'rate': abs((abs(item.taxable_value)) / item.qty),
+				'amount': abs(item.taxable_value),
 				'taxable_value': abs(item.taxable_value)
 			})
 
@@ -219,20 +218,7 @@ class EInvoice(Document):
 				pass
 
 	def set_value_details(self):
-		invoice_value_details = frappe._dict(dict())
-
-		if self.get_invoice_discount_type() == 'Net Total':
-			# Discount already applied on net total which means on items
 			self.ass_value = abs(sum([i.taxable_value for i in self.get('items')]))
-			self.invoice_discount = 0
-		elif self.get_invoice_discount_type() == 'Grand Total':
-			self.ass_value = abs(sum([i.taxable_value for i in self.get('items')]))
-			self.invoice_discount = self.sales_invoice.base_discount_amount
-		else:
-			# no invoice level discount applied
-			self.ass_value = abs(sum([i.taxable_value for i in self.get('items')]))
-			self.invoice_discount = 0
-
 		self.round_off_amount = self.sales_invoice.base_rounding_adjustment
 		self.base_invoice_value = abs(self.sales_invoice.base_rounded_total) or abs(self.sales_invoice.base_grand_total)
 		self.invoice_value = abs(self.sales_invoice.rounded_total) or abs(self.sales_invoice.grand_total)
@@ -251,8 +237,7 @@ class EInvoice(Document):
 		considered_rows = []
 
 		for t in self.sales_invoice.taxes:
-			tax_amount = t.base_tax_amount if self.get_invoice_discount_type() == 'Grand Total' \
-							else t.base_tax_amount_after_discount_amount
+			tax_amount = t.base_tax_amount_after_discount_amount
 
 			if t.account_head in gst_accounts_list:
 				if t.account_head in gst_accounts.cess_account:
