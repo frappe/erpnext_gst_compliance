@@ -7,7 +7,6 @@ from json import dumps
 from pyqrcode import create as qrcreate
 from erpnext_gst_compliance.utils import log_exception
 from frappe.integrations.utils import make_post_request, make_get_request, make_put_request
-from erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.e_invoice import create_einvoice, get_einvoice
 
 class CleartaxConnector:
 	def __init__(self, gstin):
@@ -69,7 +68,7 @@ class CleartaxConnector:
 		request_log = frappe.get_doc({
 			"doctype": "E Invoice Request Log",
 			"user": frappe.session.user,
-			"reference_invoice": self.einvoice,
+			"reference_invoice": self.einvoice.name,
 			"url": url,
 			"headers": dumps(headers, indent=4) if headers else None,
 			"data": dumps(payload, indent=4) if isinstance(payload, dict) else payload,
@@ -92,11 +91,10 @@ class CleartaxConnector:
 		return response
 
 	@log_exception
-	def make_irn_request(self, invoice_number):
+	def make_irn_request(self):
 		headers = self.get_headers()
 		url = self.endpoints.generate_irn
 
-		self.einvoice = create_einvoice(invoice_number)
 		einvoice_json = self.einvoice.get_einvoice_json()
 
 		payload = [{"transaction": einvoice_json}]
@@ -112,10 +110,11 @@ class CleartaxConnector:
 		return response
 
 	@staticmethod
-	def generate_irn(sales_invoice):
-		business_gstin = sales_invoice.company_gstin  # fetch from address?
+	def generate_irn(einvoice):
+		business_gstin = einvoice.seller_gstin
 		connector = CleartaxConnector(business_gstin)
-		response = connector.make_irn_request(sales_invoice.name)
+		connector.einvoice = einvoice
+		response = connector.make_irn_request()
 		success, errors = response.get('Success'), response.get('Errors')
 
 		return success, errors
@@ -191,11 +190,10 @@ class CleartaxConnector:
 		return _file.file_url
 
 	@log_exception
-	def make_cancel_irn_request(self, invoice_number, reason, remark):
+	def make_cancel_irn_request(self, reason, remark):
 		headers = self.get_headers()
 		url = self.endpoints.cancel_irn
 
-		self.einvoice = get_einvoice(invoice_number)
 		irn = self.einvoice.irn
 
 		payload = [{'irn': irn, 'CnlRsn': reason, 'CnlRem': remark}]
@@ -219,10 +217,11 @@ class CleartaxConnector:
 		self.einvoice.save()
 
 	@staticmethod
-	def cancel_irn(sales_invoice, reason, remark):
-		business_gstin = sales_invoice.company_gstin # fetch from address?
+	def cancel_irn(einvoice, reason, remark):
+		business_gstin = einvoice.seller_gstin
 		connector = CleartaxConnector(business_gstin)
-		response = connector.make_cancel_irn_request(sales_invoice.name, reason, remark)
+		connector.einvoice = einvoice
+		response = connector.make_cancel_irn_request(reason, remark)
 		success, errors = response.get('Success'), response.get('Errors')
 
 		return success, errors

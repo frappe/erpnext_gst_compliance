@@ -50,7 +50,10 @@ frappe.ui.form.on('Sales Invoice', {
 								remark: data.remark
 							},
 							freeze: true,
-							callback: () => frm.reload_doc() || d.hide(),
+							callback: () => {
+								frm.reload_doc();
+								d.hide();
+							},
 							error: () => d.hide()
 						});
 					},

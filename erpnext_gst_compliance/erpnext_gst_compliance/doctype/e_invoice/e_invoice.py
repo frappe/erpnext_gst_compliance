@@ -17,19 +17,25 @@ from erpnext.regional.india.utils import get_gst_accounts
 
 class EInvoice(Document):
 	def validate(self):
-		self.set_einvoice_in_sales_invoice()
 		self.validate_item_totals()
+	
+	def on_update(self):
+		self.update_sales_invoice()
 
-	def set_einvoice_in_sales_invoice(self):
-		if not self.sales_invoice:
-			self.sales_invoice = frappe.get_doc('Sales Invoice', self.invoice)
-		
-		if self.sales_invoice.e_invoice != self.name:
-			self.sales_invoice.db_set('e_invoice', self.name)
-			self.sales_invoice.db_set('e_invoice_status', self.status)
+	def on_update_after_submit(self):
+		self.update_sales_invoice()
+
+	def update_sales_invoice(self):
+		si_einvoice, si_einvoice_status = frappe.db.get_value(
+			'Sales Invoice', self.invoice, ['e_invoice', 'e_invoice_status']) or [None, None]
+
+		if si_einvoice != self.name:
+			frappe.db.set_value('Sales Invoice', self.invoice, 'e_invoice', self.name)
+		if si_einvoice_status != self.status:
+			frappe.db.set_value('Sales Invoice', self.invoice, 'e_invoice_status', self.status)
 	
 	def on_submit(self):
-		self.sales_invoice.db_set('e_invoice_status', self.status)
+		frappe.db.set_value('Sales Invoice', self.invoice, 'e_invoice_status', self.status)
 
 	def on_trash(self):
 		frappe.db.set_value('Sales Invoice', self.invoice, 'e_invoice', None)
@@ -50,7 +56,8 @@ class EInvoice(Document):
 		self.set_eway_bill_details()
 
 	def set_sales_invoice(self):
-		self.sales_invoice = frappe.get_doc('Sales Invoice', self.invoice)
+		if not self.get('sales_invoice'):
+			self.sales_invoice = frappe.get_doc('Sales Invoice', self.invoice)
 
 	def set_invoice_type(self):
 		self.invoice_type = 'CRN' if self.sales_invoice.is_return else 'INV'
@@ -220,6 +227,7 @@ class EInvoice(Document):
 
 	def set_value_details(self):
 		self.ass_value = abs(sum([i.taxable_value for i in self.get('items')]))
+		self.invoice_discount = 0
 		self.round_off_amount = self.sales_invoice.base_rounding_adjustment
 		self.base_invoice_value = abs(self.sales_invoice.base_rounded_total) or abs(self.sales_invoice.base_grand_total)
 		self.invoice_value = abs(self.sales_invoice.rounded_total) or abs(self.sales_invoice.grand_total)

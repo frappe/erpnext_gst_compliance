@@ -4,8 +4,9 @@
 import six
 import frappe
 from frappe import _
-from frappe.utils.data import get_link_to_form
 from erpnext_gst_compliance.utils import safe_load_json
+from frappe.utils.data import now_datetime, get_link_to_form, time_diff_in_hours
+from erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.e_invoice import create_einvoice, get_einvoice
 
 def parse_sales_invoice(sales_invoice):
 	if isinstance(sales_invoice, six.string_types):
@@ -29,7 +30,8 @@ def generate_irn(sales_invoice):
 	validate_irn_generation(sales_invoice)
 	connector = get_service_provider_connector()
 
-	success, errors = connector.generate_irn(sales_invoice)
+	einvoice = create_einvoice(sales_invoice.name)
+	success, errors = connector.generate_irn(einvoice)
 
 	if not success:
 		frappe.throw(errors, title=_('IRN Generation Failed'), as_list=1)
@@ -49,9 +51,24 @@ def cancel_irn(sales_invoice, reason, remark):
 	sales_invoice = parse_sales_invoice(sales_invoice)
 	connector = get_service_provider_connector()
 
-	success, errors = connector.cancel_irn(sales_invoice, reason, remark)
+	einvoice = get_einvoice(sales_invoice.name)
+	validate_irn_cancellation(einvoice)
+	success, errors = connector.cancel_irn(einvoice, reason, remark)
 
 	if not success:
 		frappe.throw(errors, title=_('IRN Cancellation Failed'), as_list=1)
 
 	return success
+
+def validate_irn_cancellation(einvoice):
+	if time_diff_in_hours(now_datetime(), einvoice.ack_date) > 24:
+		frappe.throw(_('E-Invoice cannot be cancelled after 24 hours of IRN generation.'),
+			title=_('Invalid Request'))
+
+	if not einvoice.irn:
+		frappe.throw(_('IRN not found. You must generate IRN before cancelling.'),
+			title=_('Invalid Request'))
+	
+	if einvoice.irn_cancelled:
+		frappe.throw(_('IRN is already cancelled. You cannot cancel e-invoice twice.'),
+			title=_('Invalid Request'))
