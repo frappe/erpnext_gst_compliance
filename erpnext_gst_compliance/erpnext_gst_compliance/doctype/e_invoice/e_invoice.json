@@ -460,6 +460,7 @@
    "precision": "2"
   },
   {
+   "depends_on": "eval: doc.base_invoice_value != doc.invoice_value",
    "fieldname": "base_invoice_value",
    "fieldtype": "Currency",
    "label": "Invoice Value (Company Currency)",
@@ -932,7 +933,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-06-19 20:31:25.997738",
+ "modified": "2021-06-19 20:36:58.697683",
  "modified_by": "Administrator",
  "module": "ERPNext GST Compliance",
  "name": "E Invoice",
