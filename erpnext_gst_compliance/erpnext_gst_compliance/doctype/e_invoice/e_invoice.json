@@ -668,7 +668,8 @@
   {
    "fieldname": "other_details_section",
    "fieldtype": "Section Break",
-   "label": "Other Details"
+   "label": "Other Details",
+   "print_hide": 1
   },
   {
    "fetch_from": "invoice.company",
@@ -861,11 +862,11 @@
    "read_only": 1
   },
   {
-    "collapsible": 1,
-    "fieldname": "item_totals_section",
-    "fieldtype": "Section Break",
-    "label": "Item Totals",
-    "print_hide": 1
+   "collapsible": 1,
+   "fieldname": "item_totals_section",
+   "fieldtype": "Section Break",
+   "label": "Item Totals",
+   "print_hide": 1
   },
   {
    "fieldname": "items_igst",
@@ -931,7 +932,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-06-19 20:29:28.144014",
+ "modified": "2021-06-19 20:31:25.997738",
  "modified_by": "Administrator",
  "module": "ERPNext GST Compliance",
  "name": "E Invoice",
