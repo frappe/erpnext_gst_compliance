@@ -18,6 +18,7 @@ from erpnext.regional.india.utils import get_gst_accounts
 class EInvoice(Document):
 	def validate(self):
 		self.set_einvoice_in_sales_invoice()
+		self.validate_item_totals()
 
 	def set_einvoice_in_sales_invoice(self):
 		if not self.sales_invoice:
@@ -218,7 +219,7 @@ class EInvoice(Document):
 				pass
 
 	def set_value_details(self):
-			self.ass_value = abs(sum([i.taxable_value for i in self.get('items')]))
+		self.ass_value = abs(sum([i.taxable_value for i in self.get('items')]))
 		self.round_off_amount = self.sales_invoice.base_rounding_adjustment
 		self.base_invoice_value = abs(self.sales_invoice.base_rounded_total) or abs(self.sales_invoice.base_grand_total)
 		self.invoice_value = abs(self.sales_invoice.rounded_total) or abs(self.sales_invoice.grand_total)
@@ -511,6 +512,31 @@ class EInvoice(Document):
 		self._action = 'save'
 		self._validate_links()
 		self.fetch_invoice_details()
+
+	def validate_item_totals(self):
+		error_list = []
+		for item in self.items:
+			if (item.cgst_amount or item.sgst_amount) and item.igst_amount:
+				error_list.append(_('Row #{}: Invalid value of Tax Amount, provide either IGST or both SGST and CGST.')
+					.format(item.idx))
+			
+			if item.gst_rate not in [0.000, 0.100, 0.250, 0.500, 1.000, 1.500, 3.000, 5.000, 7.500, 12.000, 18.000, 28.000]:
+				error_list.append(_('Row #{}: Invalid GST Tax rate. Please correct the Tax Rate Values and try again.')
+					.format(item.idx))
+
+			total_gst_amount = item.cgst_amount + item.sgst_amount + item.igst_amount
+			if abs((item.taxable_value * item.gst_rate / 100) - total_gst_amount) > 1:
+				error_list.append(_('Row #{}: Invalid GST Tax rate. Please correct the Tax Rate Values and try again')
+					.format(item.idx))
+
+		if abs(self.base_invoice_value - (self.items_total_value - self.invoice_discount + self.other_charges + self.round_off_amount)) > 1:
+			msg = _('Invalid Total Invoice Value.') + ' '
+			msg += _('The Total Invoice Value should be equal to the Sum of Total Value of All Items - Invoice Discount + Invoice Other charges + Round-off amount.') + ' '
+			msg += _('Please correct the Invoice Value and try again.')
+			error_list.append(msg)
+		
+		if error_list:
+			frappe.throw(error_list, title=_('E Invoice Validation Failed'), as_list=1)
 
 def create_einvoice(sales_invoice):
 	if frappe.db.exists('E Invoice', sales_invoice):
