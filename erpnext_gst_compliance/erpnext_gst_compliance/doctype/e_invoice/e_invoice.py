@@ -531,7 +531,7 @@ def validate_sales_invoice_change(doc, method=""):
 	if not doc.e_invoice:
 		return
 	
-	if doc.e_invoice_status == 'IRN Cancelled':
+	if doc.e_invoice_status in ['IRN Cancelled', 'IRN Pending']:
 		return
 
 	if doc.docstatus == 0 and doc._action == 'save':
