@@ -76,6 +76,16 @@
   "shipping_state_code",
   "item_details_section",
   "items",
+  "item_totals_section",
+  "items_ass_value",
+  "items_cgst",
+  "items_sgst",
+  "items_igst",
+  "column_break_76",
+  "items_cess",
+  "items_cess_nadv",
+  "item_other_charges",
+  "items_total_value",
   "value_details_section",
   "ass_value",
   "cgst_value",
@@ -849,12 +859,79 @@
    "label": "Status",
    "options": "IRN Pending\nIRN Generated\nIRN Cancelled\nE-Way Bill Generated",
    "read_only": 1
+  },
+  {
+    "collapsible": 1,
+    "fieldname": "item_totals_section",
+    "fieldtype": "Section Break",
+    "label": "Item Totals",
+    "print_hide": 1
+  },
+  {
+   "fieldname": "items_igst",
+   "fieldtype": "Currency",
+   "label": "IGST",
+   "non_negative": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "items_ass_value",
+   "fieldtype": "Currency",
+   "label": "Taxable Value",
+   "non_negative": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "items_cgst",
+   "fieldtype": "Currency",
+   "label": "CGST",
+   "non_negative": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "items_sgst",
+   "fieldtype": "Currency",
+   "label": "SGST",
+   "non_negative": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_76",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "items_cess",
+   "fieldtype": "Currency",
+   "label": "Cess",
+   "non_negative": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "items_cess_nadv",
+   "fieldtype": "Currency",
+   "label": "Cess Non-Advolem",
+   "non_negative": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "item_other_charges",
+   "fieldtype": "Currency",
+   "label": "Other Charges",
+   "non_negative": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "items_total_value",
+   "fieldtype": "Currency",
+   "label": "Total Value",
+   "non_negative": 1,
+   "precision": "2"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-06-10 20:36:43.199160",
+ "modified": "2021-06-19 20:29:28.144014",
  "modified_by": "Administrator",
  "module": "ERPNext GST Compliance",
  "name": "E Invoice",

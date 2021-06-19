@@ -162,6 +162,24 @@ class EInvoice(Document):
 			)
 			self.append('items', einvoice_item)
 
+		self.set_calculated_item_totals()
+
+	def set_calculated_item_totals(self):
+		item_total_fields = ['items_ass_value', 'items_igst', 'items_sgst', 'items_cgst',
+			'items_cess', 'items_cess_nadv', 'items_other_charges', 'items_total_value']
+
+		for field in item_total_fields:
+			self.set(field, 0)
+
+		for item in self.items:
+			self.items_ass_value += item.taxable_value
+			self.items_igst += item.igst_amount
+			self.items_sgst += item.sgst_amount
+			self.items_cess += item.cess_amount
+			self.items_cess_nadv += item.cess_nadv_amount
+			self.items_other_charges += item.other_charges
+			self.items_total_value += item.total_item_value
+
 	def set_item_tax_details(self, item):
 		gst_accounts = get_gst_accounts(self.company)
 		gst_accounts_list = [d for accounts in gst_accounts.values() for d in accounts if d]
