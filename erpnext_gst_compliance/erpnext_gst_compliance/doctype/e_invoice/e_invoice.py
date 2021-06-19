@@ -30,6 +30,10 @@ class EInvoice(Document):
 	def on_submit(self):
 		self.sales_invoice.db_set('e_invoice_status', self.status)
 
+	def on_trash(self):
+		frappe.db.set_value('Sales Invoice', self.invoice, 'e_invoice', None)
+		frappe.db.set_value('Sales Invoice', self.invoice, 'e_invoice_status', None)
+
 	@frappe.whitelist()
 	def fetch_invoice_details(self):
 		self.set_sales_invoice()
