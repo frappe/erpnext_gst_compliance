@@ -86,3 +86,15 @@ def generate_eway_bill(sales_invoice_name, **kwargs):
 		frappe.throw(errors, title=_('E-Way Bill Generation Failed'), as_list=1)
 
 	return success
+
+@frappe.whitelist()
+def cancel_ewaybill(sales_invoice_name, reason, remark):
+	connector = get_service_provider_connector()
+
+	einvoice = get_einvoice(sales_invoice_name)
+	success, errors = connector.cancel_ewaybill(einvoice, reason, remark)
+
+	if not success:
+		frappe.throw(errors, title=_('E-Way Bill Cancellation Failed'), as_list=1)
+
+	return success

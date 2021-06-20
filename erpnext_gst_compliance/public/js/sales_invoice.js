@@ -97,6 +97,35 @@ frappe.ui.form.on('Sales Invoice', {
 
 		if (e_invoice_status == 'E-Way Bill Generated') {
 			// Cancel E-Way Bill
+			const fields = get_irn_cancellation_fields();
+			const action = () => {
+				if (frm.is_dirty()) return raise_form_is_dirty_error();
+
+				const d = new frappe.ui.Dialog({
+					title: __("Cancel E-Way Bill"),
+					fields: fields,
+					primary_action: function() {
+						const data = d.get_values();
+						frappe.call({
+							method: e_invoicing_controller + '.cancel_ewaybill',
+							args: {
+								sales_invoice_name: frm.doc.name,
+								reason: data.reason.split('-')[0],
+								remark: data.remark
+							},
+							freeze: true,
+							callback: () => {
+								frm.reload_doc();
+								d.hide();
+							},
+							error: () => d.hide()
+						});
+					},
+					primary_action_label: __('Submit')
+				});
+				d.show();
+			};
+			add_einvoice_button(__('Cancel E-Way Bill'), action);
 		}
 	}
 });
