@@ -53,7 +53,6 @@ class EInvoice(Document):
 		self.set_value_details()
 		self.set_payment_details()
 		self.set_return_doc_reference()
-		self.set_eway_bill_details()
 
 	def set_sales_invoice(self):
 		if not self.get('sales_invoice'):
@@ -293,12 +292,6 @@ class EInvoice(Document):
 			original_invoice_date = frappe.db.get_value('Sales Invoice', self.sales_invoice.return_against, 'posting_date')
 			self.previous_document_date = format_date(original_invoice_date, 'dd/mm/yyyy')
 
-	def set_eway_bill_details(self):
-		if self.sales_invoice.transporter:
-			if self.sales_invoice.is_return:
-				frappe.throw(_('E-Way Bill cannot be generated for Credit Notes & Debit Notes. Please clear fields in the Transporter Section of the invoice.'),
-					title=_('Invalid Fields'))
-
 	def get_einvoice_json(self):
 		einvoice_json = {
 			"Version": self.version,
@@ -497,7 +490,7 @@ class EInvoice(Document):
 			return {}
 
 		mode_of_transport = {'': '', 'Road': '1', 'Air': '2', 'Rail': '3', 'Ship': '4'}
-		vehicle_type = {'': '', 'Regular': 'R', 'Over Dimensional Cargo (ODC)': 'O'}
+		vehicle_type = {'': None, 'Regular': 'R', 'Over Dimensional Cargo (ODC)': 'O'}
 
 		mode_of_transport = mode_of_transport[self.mode_of_transport]
 		vehicle_type = vehicle_type[self.vehicle_type]
@@ -545,6 +538,24 @@ class EInvoice(Document):
 		
 		if error_list:
 			frappe.throw(error_list, title=_('E Invoice Validation Failed'), as_list=1)
+
+	def set_eway_bill_details(self, details):
+		self.sales_invoice = frappe._dict()
+		self.sales_invoice.transporter = details.transporter
+		self.transporter_gstin = details.transporter_gstin
+		self.transporter_name = details.transporter_name
+		self.distance = details.distance
+		self.transport_document_no = details.transport_document_no
+		self.transport_document_date = details.transport_document_date
+		self.vehicle_no = details.vehicle_no
+		self.vehicle_type = details.vehicle_type or ''
+		self.mode_of_transport = details.mode_of_transport
+
+	def get_eway_bill_json(self):
+		eway_bill_details = self.get_ewaybill_details_json().get('EwbDtls')
+		eway_bill_details.update({ 'Irn': self.irn })
+
+		return eway_bill_details
 
 def create_einvoice(sales_invoice):
 	if frappe.db.exists('E Invoice', sales_invoice):

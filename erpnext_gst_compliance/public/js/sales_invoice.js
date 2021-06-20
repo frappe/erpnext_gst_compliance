@@ -66,6 +66,33 @@ frappe.ui.form.on('Sales Invoice', {
 
 		if (e_invoice_status == 'IRN Generated') {
 			// Generate E-Way Bill
+			const action = () => {
+				const d = new frappe.ui.Dialog({
+					title: __('Generate E-Way Bill'),
+					size: "large",
+					fields: get_eway_bill_fields(frm),
+					primary_action: function() {
+						const data = d.get_values();
+						frappe.call({
+							method: e_invoicing_controller + '.generate_eway_bill',
+							args: {
+								sales_invoice_name: frm.doc.name,
+								...data
+							},
+							freeze: true,
+							callback: () => {
+								frm.reload_doc();
+								d.hide();
+							},
+							error: () => d.hide()
+						});
+					},
+					primary_action_label: __('Submit')
+				});
+				d.show();
+			};
+
+			add_einvoice_button(__("Generate E-Way Bill"), action);
 		}
 
 		if (e_invoice_status == 'E-Way Bill Generated') {
@@ -111,3 +138,64 @@ const raise_form_is_dirty_error = () => {
 		title: __('Unsaved Document')
 	});
 }
+
+const get_eway_bill_fields = () => {
+	return [
+		{
+			'fieldname': 'transporter',
+			'label': 'Transporter',
+			'fieldtype': 'Link',
+			'options': 'Supplier'
+		},
+		{
+			'fieldname': 'transporter_gstin',
+			'label': 'GST Transporter ID',
+			'fieldtype': 'Data',
+			'fetch_from': 'transporter.gst_transporter_id'
+		},
+		{
+			'fieldname': 'transport_document_no',
+			'label': 'Transport Receipt No',
+			'fieldtype': 'Data'
+		},
+		{
+			'fieldname': 'vehicle_no',
+			'label': 'Vehicle No',
+			'fieldtype': 'Data'
+		},
+		{
+			'fieldname': 'distance',
+			'label': 'Distance (in km)',
+			'fieldtype': 'Float'
+		},
+		{
+			'fieldname': 'transporter_col_break',
+			'fieldtype': 'Column Break',
+		},
+		{
+			'fieldname': 'transporter_name',
+			'label': 'Transporter Name',
+			'fieldtype': 'Data',
+			'fetch_from': 'transporter.name'
+		},
+		{
+			'fieldname': 'mode_of_transport',
+			'label': 'Mode of Transport',
+			'fieldtype': 'Select',
+			'options': `\nRoad\nAir\nRail\nShip`
+		},
+		{
+			'fieldname': 'transport_document_date',
+			'label': 'Transport Receipt Date',
+			'fieldtype': 'Date'
+		},
+		{
+			'fieldname': 'vehicle_type',
+			'label': 'GST Vehicle Type',
+			'fieldtype': 'Select',
+			'options': `\nRegular\nOver Dimensional Cargo (ODC)`,
+			'depends_on': 'eval:(doc.mode_of_transport === "Road")',
+			'default': ''
+		}
+	];
+};

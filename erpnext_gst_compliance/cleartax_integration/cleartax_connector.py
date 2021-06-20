@@ -225,3 +225,40 @@ class CleartaxConnector:
 		success, errors = response.get('Success'), response.get('Errors')
 
 		return success, errors
+
+	@log_exception
+	def make_eway_bill_request(self):
+		headers = self.get_headers()
+		url = self.endpoints.generate_ewaybill
+
+		eway_bill_json = self.einvoice.get_eway_bill_json()
+
+		payload = [eway_bill_json]
+		payload = dumps(payload, indent=4)
+
+		response = self.make_request('post', url, headers, payload)
+		# Sample Response -> https://docs.cleartax.in/cleartax-for-developers/e-invoicing-api/e-invoicing-api-reference/cleartax-e-invoicing-apis-xml-schema#sample-response-3
+
+		response = self.sanitize_response(response)
+		if response.get('Success'):
+			self.handle_successful_ewaybill_generation(response)
+
+		return response
+
+	def handle_successful_ewaybill_generation(self, response):
+		self.einvoice.ewaybill = response.get('EwbNo')
+		self.einvoice.ewaybill_validity = response.get('EwbValidTill')
+		self.einvoice.status = 'E-Way Bill Generated'
+		self.einvoice.flags.ignore_validate_update_after_submit = 1
+		self.einvoice.flags.ignore_permissions = 1
+		self.einvoice.save()
+
+	@staticmethod
+	def generate_eway_bill(einvoice):
+		business_gstin = einvoice.seller_gstin
+		connector = CleartaxConnector(business_gstin)
+		connector.einvoice = einvoice
+		response = connector.make_eway_bill_request()
+		success, errors = response.get('Success'), response.get('Errors')
+
+		return success, errors

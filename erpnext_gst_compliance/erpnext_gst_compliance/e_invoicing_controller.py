@@ -72,3 +72,17 @@ def validate_irn_cancellation(einvoice):
 	if einvoice.irn_cancelled:
 		frappe.throw(_('IRN is already cancelled. You cannot cancel e-invoice twice.'),
 			title=_('Invalid Request'))
+
+@frappe.whitelist()
+def generate_eway_bill(sales_invoice_name, **kwargs):
+	connector = get_service_provider_connector()
+
+	eway_bill_details = frappe._dict(kwargs)
+	einvoice = get_einvoice(sales_invoice_name)
+	einvoice.set_eway_bill_details(eway_bill_details)
+	success, errors = connector.generate_eway_bill(einvoice)
+
+	if not success:
+		frappe.throw(errors, title=_('E-Way Bill Generation Failed'), as_list=1)
+
+	return success
