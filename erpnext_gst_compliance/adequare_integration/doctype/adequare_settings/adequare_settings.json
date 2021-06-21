@@ -28,7 +28,7 @@
   },
   {
    "fieldname": "auth_token",
-   "fieldtype": "Password",
+   "fieldtype": "Data",
    "hidden": 1,
    "label": "Authorization Token",
    "read_only": 1
@@ -52,7 +52,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2021-06-21 16:38:11.793725",
+ "modified": "2021-06-21 16:51:49.242534",
  "modified_by": "Administrator",
  "module": "Adequare Integration",
  "name": "Adequare Settings",

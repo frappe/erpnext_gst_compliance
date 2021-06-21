@@ -294,7 +294,7 @@ class EInvoice(Document):
 
 	def get_einvoice_json(self):
 		einvoice_json = {
-			"Version": self.version,
+			"Version": str(self.version),
 			"TranDtls": {
 				"TaxSch": self.tax_scheme,
 				"SupTyp": self.supply_type,
@@ -396,7 +396,7 @@ class EInvoice(Document):
 		item_list = []
 		for row in self.items:
 			item = {
-				"SlNo": row.idx,
+				"SlNo": str(row.idx),
 				"PrdDesc": row.item_name,
 				"IsServc": "Y" if row.is_service_item else "N",
 				"HsnCd": row.hsn_code,
