@@ -1,0 +1,75 @@
+{
+ "actions": [],
+ "creation": "2021-06-21 16:35:18.701406",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "enabled",
+  "sandbox_mode",
+  "credentials",
+  "auth_token",
+  "token_expiry"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "enabled",
+   "fieldtype": "Check",
+   "label": "Enable"
+  },
+  {
+   "default": "0",
+   "depends_on": "enabled",
+   "fieldname": "sandbox_mode",
+   "fieldtype": "Check",
+   "label": "Sandbox Mode",
+   "mandatory_depends_on": "enabled"
+  },
+  {
+   "fieldname": "auth_token",
+   "fieldtype": "Password",
+   "hidden": 1,
+   "label": "Authorization Token",
+   "read_only": 1
+  },
+  {
+   "depends_on": "enabled",
+   "fieldname": "credentials",
+   "fieldtype": "Table",
+   "label": "Credentials",
+   "mandatory_depends_on": "enabled",
+   "options": "Adequare Credential"
+  },
+  {
+   "fieldname": "token_expiry",
+   "fieldtype": "Datetime",
+   "hidden": 1,
+   "label": "Token Expiry",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2021-06-21 16:38:11.793725",
+ "modified_by": "Administrator",
+ "module": "Adequare Integration",
+ "name": "Adequare Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
