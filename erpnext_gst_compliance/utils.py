@@ -14,14 +14,20 @@ def log_exception(fn):
 		try:
 			return_value = fn(*args, **kwargs)
 		except HandledException:
-			raise
-		except Exception:
+			# exception has been logged, so just raise a proper error message
+			show_request_failed_error()
+		except Exception as e:
 			log_error()
-			raise HandledException
+			raise HandledException(e)
 
 		return return_value
 
 	return wrapper
+
+def show_request_failed_error():
+	message = _('There was an error while making the request.') + ' '
+	message += _('Please try once again and if the issue persists, please contact ERPNext Support.')
+	frappe.throw(message, title=_('Request Failed'))
 
 def log_error():
 	frappe.db.rollback()
@@ -36,7 +42,7 @@ def log_error():
 		"Exception:", err_tb
 	])
 	frappe.log_error(
-		title=_('Handled Exception'), 
+		title=_('E-Invoicing Exception'),
 		message=message
 	)
 	frappe.db.commit()
