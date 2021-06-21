@@ -566,6 +566,7 @@ def create_einvoice(sales_invoice):
 
 	einvoice.sync_with_sales_invoice()
 	einvoice.save()
+	frappe.db.commit()
 
 	return einvoice
 
