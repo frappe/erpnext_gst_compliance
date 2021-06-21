@@ -4,7 +4,7 @@ import frappe
 import traceback
 from frappe import _
 
-class HandledException(Exception): pass
+class HandledException(frappe.ValidationError): pass
 
 def log_exception(fn):
 	'''Decorator to catch & log exceptions'''
@@ -15,10 +15,11 @@ def log_exception(fn):
 			return_value = fn(*args, **kwargs)
 		except HandledException:
 			# exception has been logged, so just raise a proper error message
+			frappe.clear_messages()
 			show_request_failed_error()
-		except Exception as e:
+		except Exception:
 			log_error()
-			raise HandledException(e)
+			raise HandledException
 
 		return return_value
 
@@ -27,7 +28,7 @@ def log_exception(fn):
 def show_request_failed_error():
 	message = _('There was an error while making the request.') + ' '
 	message += _('Please try once again and if the issue persists, please contact ERPNext Support.')
-	frappe.throw(message, title=_('Request Failed'))
+	frappe.throw(message, title=_('Request Failed'), exc=HandledException)
 
 def log_error():
 	frappe.db.rollback()
