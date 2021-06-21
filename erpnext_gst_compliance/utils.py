@@ -1,4 +1,3 @@
-import six
 import sys
 import json
 import frappe
@@ -43,11 +42,9 @@ def log_error():
 	frappe.db.commit()
 
 def safe_load_json(message):
-	JSONDecodeError = ValueError if six.PY2 else json.JSONDecodeError
-
 	try:
 		json_message = json.loads(message)
-	except JSONDecodeError:
+	except Exception:
 		json_message = message
 
 	return json_message
