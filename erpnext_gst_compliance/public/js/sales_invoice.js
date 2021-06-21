@@ -133,7 +133,7 @@ frappe.ui.form.on('Sales Invoice', {
 const get_einvoice_eligibility = async (doc) => {
 	frappe.dom.freeze();
 	const { message: invoice_eligible } = await frappe.call({
-		method: 'erpnext_gst_compliance.utils.validate_einvoice_eligibility',
+		method: 'erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.e_invoice.validate_einvoice_eligibility',
 		args: { doc: doc },
 		debounce: 2000
 	});

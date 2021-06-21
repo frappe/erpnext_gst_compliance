@@ -4,13 +4,13 @@
 
 from __future__ import unicode_literals
 
-from json import loads
-
+import six
 import frappe
 from frappe import _
+from json import loads
 from frappe.model import default_fields
 from frappe.model.document import Document
-from frappe.utils.data import cint, format_date
+from frappe.utils.data import cint, format_date, getdate
 from frappe.core.doctype.version.version import get_diff
 
 from erpnext.regional.india.utils import get_gst_accounts
@@ -605,3 +605,49 @@ def remove_default_fields(doc):
 			doc.set(fieldname, None)
 
 	return doc
+
+@frappe.whitelist()
+def validate_einvoice_eligibility(doc):
+	if isinstance(doc, six.string_types):
+		doc = loads(doc)
+
+	service_provider = frappe.db.get_single_value('E Invoicing Settings', 'service_provider')
+	if not service_provider:
+		return False
+	
+	einvoicing_enabled = cint(frappe.db.get_single_value(service_provider, 'enabled'))
+	if not einvoicing_enabled:
+		return False
+
+	einvoicing_eligible_from = '2021-04-01'
+	if getdate(doc.get('posting_date')) < getdate(einvoicing_eligible_from):
+		return False
+
+	# TODO - add company check
+	invalid_supply_type = doc.get('gst_category') not in ['Registered Regular', 'SEZ', 'Overseas', 'Deemed Export']
+	inter_company_transaction = doc.get('billing_address_gstin') == doc.get('company_gstin')
+	has_non_gst_item = any(d for d in doc.get('items', []) if d.get('is_non_gst'))
+	no_taxes_applied = not doc.get('taxes')
+
+	if invalid_supply_type or inter_company_transaction or no_taxes_applied or has_non_gst_item:
+		return False
+
+	return True
+
+def validate_sales_invoice_submission(doc, method=""):
+	invoice_eligible = validate_einvoice_eligibility(doc)
+
+	if not invoice_eligible:
+		return
+
+	if doc.get('e_invoice_status') == 'IRN Pending':
+		frappe.throw(_('You must generate IRN before submitting the document.'), title=_('Missing IRN'))
+
+def validate_sales_invoice_cancellation(doc, method=""):
+	invoice_eligible = validate_einvoice_eligibility(doc)
+
+	if not invoice_eligible:
+		return
+
+	if doc.get('e_invoice_status') != 'IRN Cancelled':
+		frappe.throw(_('You must cancel IRN before cancelling the document.'), title=_('Cancellation Not Allowed'))
