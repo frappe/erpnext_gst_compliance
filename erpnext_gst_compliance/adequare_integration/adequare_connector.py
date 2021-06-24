@@ -199,6 +199,9 @@ class AdequareConnector:
 		if not message:
 			return []
 
+		if not ' : ' in message:
+			return [message]
+
 		errors = re.findall(' : [^:]+', message)
 		for idx, e in enumerate(errors):
 			# remove colons
