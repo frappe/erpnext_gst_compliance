@@ -269,3 +269,41 @@ class AdequareConnector:
 
 		return success, errors
 
+	@log_exception
+	def make_eway_bill_request(self):
+		headers = self.get_headers()
+		url = self.endpoints.generate_ewaybill
+
+		eway_bill_json = self.einvoice.get_eway_bill_json()
+		payload = dumps(eway_bill_json, indent=4)
+
+		response = self.make_request('post', url, headers, payload)
+
+		if response.get('success'):
+			govt_response = response.get('result')
+			self.handle_successful_ewaybill_generation(govt_response)
+		else:
+			errors = response.get('message')
+			errors = self.sanitize_error_message(errors)
+			return False, errors
+
+		return True, []
+
+	def handle_successful_ewaybill_generation(self, response):
+		self.einvoice.ewaybill = response.get('EwbNo')
+		self.einvoice.ewaybill_validity = response.get('EwbValidTill')
+		self.einvoice.status = 'E-Way Bill Generated'
+		self.einvoice.flags.ignore_validate_update_after_submit = 1
+		self.einvoice.flags.ignore_permissions = 1
+		self.einvoice.save()
+
+	@staticmethod
+	@log_exception
+	def generate_eway_bill(einvoice):
+		gstin = einvoice.seller_gstin
+		connector = AdequareConnector(gstin)
+		connector.einvoice = einvoice
+		success, errors = connector.make_eway_bill_request()
+
+		return success, errors
+

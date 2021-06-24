@@ -499,7 +499,7 @@ class EInvoice(Document):
 			"EwbDtls": {
 				"TransId": self.transporter_gstin,
 				"TransName": self.transporter_name,
-				"Distance": self.distance or 0,
+				"Distance": cint(self.distance) or 0,
 				"TransDocNo": self.transport_document_no,
 				"TransDocDt": format_date(self.transport_document_date, 'dd/mm/yyyy'),
 				"VehNo": self.vehicle_no,
