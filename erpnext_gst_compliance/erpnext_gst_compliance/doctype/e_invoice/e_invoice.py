@@ -641,7 +641,7 @@ def validate_sales_invoice_submission(doc, method=""):
 	if not invoice_eligible:
 		return
 
-	if doc.get('e_invoice_status') == 'IRN Pending':
+	if not doc.get('e_invoice_status') or doc.get('e_invoice_status') == 'IRN Pending':
 		frappe.throw(_('You must generate IRN before submitting the document.'), title=_('Missing IRN'))
 
 def validate_sales_invoice_cancellation(doc, method=""):
