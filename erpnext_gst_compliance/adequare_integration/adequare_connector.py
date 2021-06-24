@@ -127,6 +127,7 @@ class AdequareConnector:
 		return True, []
 
 	@staticmethod
+	@log_exception
 	def generate_irn(einvoice):
 		gstin = einvoice.seller_gstin
 		connector = AdequareConnector(gstin)
@@ -227,4 +228,44 @@ class AdequareConnector:
 			errors = response.get('message')
 			errors = self.sanitize_error_message(errors)
 			return False, errors
+
+	@log_exception
+	def make_cancel_irn_request(self, reason, remark):
+		headers = self.get_headers()
+		irn = self.einvoice.irn
+
+		payload = {'Irn': irn, 'Cnlrsn': reason, 'Cnlrem': remark}
+		payload = dumps(payload, indent=4)
+
+		url = self.endpoints.cancel_irn
+		response = self.make_request('post', url, headers, payload)
+
+		irn_already_cancelled = '9999' in response.get('message')
+		if response.get('success') or irn_already_cancelled:
+			govt_response = response.get('result')
+			self.handle_successful_irn_cancellation(govt_response)
+		else:
+			errors = response.get('message')
+			errors = self.sanitize_error_message(errors)
+			return False, errors
+
+		return True, []
+
+	def handle_successful_irn_cancellation(self, response):
+		self.einvoice.irn_cancelled = 1
+		self.einvoice.irn_cancel_date = response.get('CancelDate', '')
+		self.einvoice.status = 'IRN Cancelled'
+		self.einvoice.flags.ignore_validate_update_after_submit = 1
+		self.einvoice.flags.ignore_permissions = 1
+		self.einvoice.save()
+
+	@staticmethod
+	@log_exception
+	def cancel_irn(einvoice, reason, remark):
+		gstin = einvoice.seller_gstin
+		connector = AdequareConnector(gstin)
+		connector.einvoice = einvoice
+		success, errors = connector.make_cancel_irn_request(reason, remark)
+
+		return success, errors
 
