@@ -180,8 +180,8 @@ class AdequareConnector:
 		# IRN already generated but not updated in invoice
 		# Extract the IRN from the response description and fetch irn details
 		irn = response[0].get('Desc').get('Irn')
-		irn_details = self.get_irn_details(irn)
-		if irn_details:
+		success, irn_details = self.make_get_irn_details_request(irn)
+		if success:
 			self.handle_successful_irn_generation(irn_details)
 
 	def sanitize_error_message(self, message):
@@ -209,3 +209,19 @@ class AdequareConnector:
 				errors[idx] = errors[idx][:-6]
 
 		return errors
+
+	@log_exception
+	def make_get_irn_details_request(self, irn):
+		headers = self.get_headers()
+		url = self.endpoints.irn_details
+
+		params = '?irn={irn}'.format(irn=irn)
+		response = self.make_request('get', url + params, headers, None)
+
+		if response.get('success'):
+			return True, response.get('result')
+		else:
+			errors = response.get('message')
+			errors = self.sanitize_error_message(errors)
+			return False, errors
+
