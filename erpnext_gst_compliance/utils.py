@@ -14,18 +14,19 @@ def log_exception(fn):
 		try:
 			return_value = fn(*args, **kwargs)
 		except HandledException:
-			# exception has been logged, so just raise a proper error message
-			frappe.clear_messages()
-			show_request_failed_error()
+			# exception has been logged
+			# so just continue raising HandledException to stop futher logging
+			raise
 		except Exception:
 			log_error()
-			raise HandledException
+			show_request_failed_error()
 
 		return return_value
 
 	return wrapper
 
 def show_request_failed_error():
+	frappe.clear_messages()
 	message = _('There was an error while making the request.') + ' '
 	message += _('Please try once again and if the issue persists, please contact ERPNext Support.')
 	frappe.throw(message, title=_('Request Failed'), exc=HandledException)
