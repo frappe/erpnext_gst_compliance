@@ -10,6 +10,7 @@ frappe.listview_settings['E Invoice'] = {
 			"IRN Generated": "green",
 			"E-Way Bill Generated": "green",
 			"IRN Cancelled": "red",
+			"E-Way Bill Cancelled": "red",
             "Cancelled": "red"
 		};
 		return [__(doc.status), status_color[doc.status], "status,=,"+doc.status];

@@ -38,7 +38,7 @@ class AdequareConnector:
 			"cancel_irn": self.host + '/enriched/ei/api/invoice/cancel',
 			"irn_details": self.host + '/enriched/ei/api/invoice/irn',
 			"gstin_details": self.host + '/enriched/ei/api/master/gstin',
-			"cancel_ewaybill": self.host + '/enriched/ewb/ewayapi?action=CANEWB',
+			"cancel_ewaybill": self.host + '/enriched/ei/api/ewayapi',
 			"generate_ewaybill": self.host + '/enriched/ei/api/ewaybill',
 		})
 
@@ -307,3 +307,41 @@ class AdequareConnector:
 
 		return success, errors
 
+	@log_exception
+	def make_cancel_ewaybill_request(self, reason, remark):
+		headers = self.get_headers()
+		url = self.endpoints.cancel_ewaybill
+
+		ewaybill = self.einvoice.ewaybill
+
+		payload = {'ewbNo': ewaybill, 'cancelRsnCode': reason, 'cancelRmrk': remark}
+		payload = dumps(payload, indent=4)
+
+		response = self.make_request('post', url, headers, payload)
+
+		if response.get('success'):
+			self.handle_successful_ewaybill_cancellation()
+		else:
+			errors = response.get('message')
+			errors = self.sanitize_error_message(errors)
+			return False, errors
+
+		return True, []
+
+	def handle_successful_ewaybill_cancellation(self):
+		self.einvoice.ewaybill = ''
+		self.einvoice.ewaybill_cancelled = 1
+		self.einvoice.status = 'E-Way Bill Cancelled'
+		self.einvoice.flags.ignore_validate_update_after_submit = 1
+		self.einvoice.flags.ignore_permissions = 1
+		self.einvoice.save()
+
+	@staticmethod
+	@log_exception
+	def cancel_ewaybill(einvoice, reason, remark):
+		gstin = einvoice.seller_gstin
+		connector = AdequareConnector(gstin)
+		connector.einvoice = einvoice
+		success, errors = connector.make_cancel_ewaybill_request(reason, remark)
+
+		return success, errors

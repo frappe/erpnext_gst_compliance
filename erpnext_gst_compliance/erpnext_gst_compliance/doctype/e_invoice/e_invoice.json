@@ -859,7 +859,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "IRN Pending\nIRN Generated\nIRN Cancelled\nE-Way Bill Generated",
+   "options": "IRN Pending\nIRN Generated\nIRN Cancelled\nE-Way Bill Generated\nE-Way Bill Cancelled",
    "read_only": 1
   },
   {
@@ -933,7 +933,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-06-19 20:36:58.697683",
+ "modified": "2021-06-25 13:05:35.867012",
  "modified_by": "Administrator",
  "module": "ERPNext GST Compliance",
  "name": "E Invoice",
