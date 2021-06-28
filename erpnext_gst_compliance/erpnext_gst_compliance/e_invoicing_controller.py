@@ -87,14 +87,28 @@ def generate_eway_bill(sales_invoice_name, **kwargs):
 
 	return success
 
+# cancel ewaybill api is currently not supported by E-Invoice Portal
+
+# @frappe.whitelist()
+# def cancel_ewaybill(sales_invoice_name, reason, remark):
+# 	connector = get_service_provider_connector()
+
+# 	einvoice = get_einvoice(sales_invoice_name)
+# 	success, errors = connector.cancel_ewaybill(einvoice, reason, remark)
+
+# 	if not success:
+# 		frappe.throw(errors, title=_('E-Way Bill Cancellation Failed'), as_list=1)
+
+# 	return success
+
+
 @frappe.whitelist()
-def cancel_ewaybill(sales_invoice_name, reason, remark):
-	connector = get_service_provider_connector()
-
+def cancel_ewaybill(sales_invoice_name):
 	einvoice = get_einvoice(sales_invoice_name)
-	success, errors = connector.cancel_ewaybill(einvoice, reason, remark)
 
-	if not success:
-		frappe.throw(errors, title=_('E-Way Bill Cancellation Failed'), as_list=1)
-
-	return success
+	einvoice.ewaybill = ''
+	einvoice.ewaybill_cancelled = 1
+	einvoice.status = 'E-Way Bill Cancelled'
+	einvoice.flags.ignore_validate_update_after_submit = 1
+	einvoice.flags.ignore_permissions = 1
+	einvoice.save()
