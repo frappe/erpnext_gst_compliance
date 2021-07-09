@@ -17,6 +17,7 @@ from erpnext.regional.india.utils import get_gst_accounts
 
 class EInvoice(Document):
 	def validate(self):
+		self.validate_uom()
 		self.validate_item_totals()
 	
 	def on_update(self):
@@ -539,6 +540,17 @@ class EInvoice(Document):
 		
 		if error_list:
 			frappe.throw(error_list, title=_('E Invoice Validation Failed'), as_list=1)
+
+	def validate_uom(self):
+		valid_uoms = ['BAG', 'BAL', 'BDL', 'BKL', 'BOU', 'BOX', 'BTL', 'BUN', 'CAN', 'CCM', 'CMS', 'CBM', 'CTN', 'DOZ', 'DRM', 'GGK', 'GMS', 'GRS', 'GYD', 'KGS', 'KLR', 'KME', 'LTR', 'MLS', 'MLT', 'MTR', 'MTS', 'NOS', 'OTH', 'PAC', 'PCS', 'PRS', 'QTL', 'ROL', 'SET', 'SQF', 'SQM', 'SQY', 'TBS', 'TGM', 'THD', 'TON', 'TUB', 'UGS', 'UNT', 'YD']
+		for item in self.items:
+			if item.unit and item.unit.upper() not in valid_uoms:
+				msg = _('Row #{}: {} has invalid UOM set.').format(item.idx, item.item_name) + ' '
+				msg += _('Please set proper UOM as defined by e-invoice portal.')
+				msg += '<br><br>'
+				uom_list_link = '<a href="https://einvoice1.gst.gov.in/Others/MasterCodes" target="_blank">this</a>'
+				msg += _('You can refer {} link to check valid UOMs defined by e-invoice portal.').format(uom_list_link)
+				frappe.throw(msg, title=_('Invalid Item UOM'))
 
 	def set_eway_bill_details(self, details):
 		self.sales_invoice = frappe._dict()
