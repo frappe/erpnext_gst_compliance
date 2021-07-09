@@ -348,7 +348,6 @@ class EInvoice(Document):
 				"TrdNm": self.buyer_trade_name,
 				"Pos": self.buyer_place_of_supply,
 				"Addr1": self.buyer_address_line_1,
-				"Addr2": self.buyer_address_line_2,
 				"Loc": self.buyer_location,
 				"Pin": cint(self.buyer_pincode),
 				"Stcd": self.buyer_state_code,
@@ -379,11 +378,10 @@ class EInvoice(Document):
 			shipping_address = {
 				"ShipDtls": {
 					"Gstin": self.shipping_gstin,
-					"LglNm": self.shippping_legal_name,
+					"LglNm": self.shipping_legal_name,
 					"TrdNm": self.shipping_trade_name,
 					"Pos": self.shipping_place_of_supply,
 					"Addr1": self.shipping_address_line_1,
-					"Addr2": self.shipping_address_line_2,
 					"Loc": self.shipping_location,
 					"Pin": cint(self.shipping_pincode),
 					"Stcd": self.shipping_state_code
