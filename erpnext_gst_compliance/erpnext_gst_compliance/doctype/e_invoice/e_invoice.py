@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import six
 import frappe
 from frappe import _
-from json import loads
+from json import loads, dumps
 from frappe.model import default_fields
 from frappe.model.document import Document
 from frappe.utils.data import cint, format_date, getdate
@@ -18,8 +18,14 @@ from erpnext.regional.india.utils import get_gst_accounts
 class EInvoice(Document):
 	def validate(self):
 		self.validate_uom()
-		self.validate_item_totals()
+		self.validate_items()
 	
+	def before_submit(self):
+		if not self.irn:
+			msg = _("Cannot submit e-invoice without IRN.") + ' '
+			msg += _("You must generate IRN for the sales invoice to submit this e-invoice.")
+			frappe.throw(msg, title=_("Missing IRN"))
+
 	def on_update(self):
 		self.update_sales_invoice()
 
@@ -79,8 +85,17 @@ class EInvoice(Document):
 			frappe.throw(_('Company address must be set to be able to generate e-invoice.'))
 
 		seller_address = frappe.get_all('Address', {'name': company_address}, ['*'])[0]
-		if not seller_address.gstin:
-			frappe.throw(_('Company address {} must have GSTIN set to be able to generate e-invoice.').format(company_address))
+		mandatory_field_label_map = {
+			'gstin': 'GSTIN',
+			'address_line1': 'Address Lines',
+			'city': 'City',
+			'pincode': 'Pincode',
+			'gst_state_number': 'State Code'
+		}
+		for field, field_label in mandatory_field_label_map.items():
+			if not seller_address[field]:
+				frappe.throw(_('Company address {} must have {} set to be able to generate e-invoice.')
+					.format(company_address, field_label))
 
 		self.seller_legal_name = self.company
 		self.seller_gstin = seller_address.gstin
@@ -97,9 +112,23 @@ class EInvoice(Document):
 
 		is_export = self.supply_type == 'EXPWOP'
 		buyer_address = frappe.get_all('Address', {'name': customer_address}, ['*'])[0]
+		mandatory_field_label_map = {
+			'gstin': 'GSTIN',
+			'address_line1': 'Address Lines',
+			'city': 'City',
+			'pincode': 'Pincode',
+			'gst_state_number': 'State Code'
+		}
+		for field, field_label in mandatory_field_label_map.items():
+			if field == 'gstin':
+				if not buyer_address.gstin and not is_export:
+					frappe.throw(_('Customer address {} must have {} set to be able to generate e-invoice.')
+						.format(customer_address, field_label))
+				continue
 
-		if not buyer_address.gstin and not is_export:
-			frappe.throw(_('Customer address {} must have GSTIN set to be able to generate e-invoice.').format(customer_address))
+			if not buyer_address[field]:
+				frappe.throw(_('Customer address {} must have {} set to be able to generate e-invoice.')
+					.format(customer_address, field_label))
 
 		self.buyer_legal_name = self.sales_invoice.customer
 		self.buyer_gstin = buyer_address.gstin
@@ -136,16 +165,17 @@ class EInvoice(Document):
 				self.shipping_pincode = 999999
 				self.shipping_place_of_supply = 96
 
-	def get_invoice_discount_type(self):
-		if self.sales_invoice.discount_amount:
-			return self.sales_invoice.apply_discount_on
-
-		return ''
-
 	def set_item_details(self):
-		self.items = []
-		discount_applied_on_net_total = self.get_invoice_discount_type() == 'Net Total'
+		sales_invoice_item_names = [d.name for d in self.sales_invoice.items]
+		e_invoice_item_names = [d.si_item_ref for d in self.items]
+		item_added_or_removed = sales_invoice_item_names != e_invoice_item_names
 
+		if self.items and not item_added_or_removed:
+			self.update_items_from_invoice()
+		else:
+			self.fetch_items_from_invoice()
+
+	def fetch_items_from_invoice(self):
 		for item in self.sales_invoice.items:
 			if not item.gst_hsn_code:
 				frappe.throw(_('Row #{}: Item {} must have HSN code set to be able to generate e-invoice.')
@@ -154,6 +184,7 @@ class EInvoice(Document):
 			is_service_item = item.gst_hsn_code[:2] == "99"
 
 			einvoice_item = frappe._dict({
+				'si_item_ref': item.name,
 				'item_code': item.item_code,
 				'item_name': item.item_name,
 				'is_service_item': is_service_item,
@@ -175,6 +206,40 @@ class EInvoice(Document):
 				einvoice_item.other_charges
 			)
 			self.append('items', einvoice_item)
+
+		self.set_calculated_item_totals()
+
+	def update_items_from_invoice(self):
+		for i, einvoice_item in enumerate(self.items):
+			item = self.sales_invoice.items[i]
+
+			if not item.gst_hsn_code:
+				frappe.throw(_('Row #{}: Item {} must have HSN code set to be able to generate e-invoice.')
+					.format(item.idx, item.item_code))
+
+			is_service_item = item.gst_hsn_code[:2] == "99"
+
+			einvoice_item.update({
+				'item_code': item.item_code,
+				'item_name': item.item_name,
+				'is_service_item': is_service_item,
+				'hsn_code': item.gst_hsn_code,
+				'quantity': abs(item.qty),
+				'discount': 0,
+				'unit': item.uom,
+				'rate': abs((abs(item.taxable_value)) / item.qty),
+				'amount': abs(item.taxable_value),
+				'taxable_value': abs(item.taxable_value)
+			})
+
+			self.set_item_tax_details(einvoice_item)
+
+			einvoice_item.total_item_value = abs(
+				einvoice_item.taxable_value + einvoice_item.igst_amount +
+				einvoice_item.sgst_amount + einvoice_item.cgst_amount + 
+				einvoice_item.cess_amount + einvoice_item.cess_nadv_amount +
+				einvoice_item.other_charges
+			)
 
 		self.set_calculated_item_totals()
 
@@ -200,7 +265,7 @@ class EInvoice(Document):
 
 		for attr in ['gst_rate', 'cgst_amount',  'sgst_amount', 'igst_amount',
 			'cess_rate', 'cess_amount', 'cess_nadv_amount', 'other_charges']:
-			item[attr] = 0
+			item.update({ attr: 0 })
 
 		for t in self.sales_invoice.taxes:
 			is_applicable = t.tax_amount and t.account_head in gst_accounts_list
@@ -223,7 +288,10 @@ class EInvoice(Document):
 				for tax_type in ['igst', 'cgst', 'sgst']:
 					if t.account_head in gst_accounts[f'{tax_type}_account']:
 						item.gst_rate += item_tax_rate
-						item[f'{tax_type}_amount'] += abs(item_tax_amount)
+						amt_fieldname = f'{tax_type}_amount'
+						item.update({
+							amt_fieldname: item.get(amt_fieldname, 0) + abs(item_tax_amount)
+						})
 			else:
 				# TODO: other charges per item
 				pass
@@ -516,7 +584,7 @@ class EInvoice(Document):
 		self._validate_links()
 		self.fetch_invoice_details()
 
-	def validate_item_totals(self):
+	def validate_items(self):
 		error_list = []
 		for item in self.items:
 			if (item.cgst_amount or item.sgst_amount) and item.igst_amount:
@@ -529,7 +597,11 @@ class EInvoice(Document):
 
 			total_gst_amount = item.cgst_amount + item.sgst_amount + item.igst_amount
 			if abs((item.taxable_value * item.gst_rate / 100) - total_gst_amount) > 1:
-				error_list.append(_('Row #{}: Invalid GST Tax rate. Please correct the Tax Rate Values and try again')
+				error_list.append(_('Row #{}: Invalid GST Tax rate. Please correct the Tax Rate Values and try again.')
+					.format(item.idx))
+
+			if not item.hsn_code:
+				error_list.append(_('Row #{}: HSN Code is mandatory for e-invoice generation.')
 					.format(item.idx))
 
 		if abs(self.base_invoice_value - (self.items_total_value - self.invoice_discount + self.other_charges + self.round_off_amount)) > 1:
@@ -595,19 +667,24 @@ def validate_sales_invoice_change(doc, method=""):
 
 	if doc.docstatus == 0 and doc._action == 'save':
 		einvoice = get_einvoice(doc.e_invoice)
-		einvoice_copy = frappe.copy_doc(einvoice)
+		einvoice_copy = get_einvoice(doc.e_invoice)
 		einvoice_copy.sync_with_sales_invoice()
 
 		# to ignore changes in default fields
 		einvoice = remove_default_fields(einvoice)
+		einvoice_copy = remove_default_fields(einvoice_copy)
 		diff = get_diff(einvoice, einvoice_copy)
 
 		if diff:
+			frappe.log_error(
+				message=dumps(diff, indent=2),
+				title=_('E-Invoice: Edit Not Allowed')
+			)
 			frappe.throw(_('You cannot edit the invoice after generating IRN'), title=_('Edit Not Allowed'))
 
 def remove_default_fields(doc):
-	clone = doc.as_dict().copy()
-	for fieldname in clone:
+	clone = frappe.copy_doc(doc)
+	for fieldname in clone.as_dict():
 		value = doc.get(fieldname)
 		if isinstance(value, list):
 			trimmed_child_docs = []
@@ -615,7 +692,11 @@ def remove_default_fields(doc):
 				trimmed_child_docs.append(remove_default_fields(d))
 			doc.set(fieldname, trimmed_child_docs)
 
-		if fieldname in default_fields:
+		if fieldname == 'name':
+			# do not reset name, since it is used to check child table row changes
+			continue
+
+		if fieldname in default_fields or fieldname == '__islocal':
 			doc.set(fieldname, None)
 
 	return doc
