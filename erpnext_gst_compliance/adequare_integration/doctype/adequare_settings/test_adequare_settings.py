@@ -9,7 +9,7 @@ from erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.test_e_invo
 class TestAdequareSettings(unittest.TestCase):
 	pass
 
-class TestAdequareConnetor(unittest.TestCase):
+class TestAdequareConnector(unittest.TestCase):
 	def setUp(self):
 		adequare_settings = frappe.get_single('Adequare Settings')
 		adequare_settings.enabled = 1
