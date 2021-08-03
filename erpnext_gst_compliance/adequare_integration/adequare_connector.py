@@ -7,6 +7,7 @@ import frappe
 from frappe import _
 from json import dumps
 from pyqrcode import create as qrcreate
+from frappe.utils.data import get_link_to_form
 from erpnext_gst_compliance.utils import log_exception
 from frappe.integrations.utils import make_post_request, make_get_request
 from frappe.utils.data import add_to_date, time_diff_in_seconds, now_datetime
@@ -45,6 +46,11 @@ class AdequareConnector:
 	def validate(self):
 		if not self.settings.enabled:
 			frappe.throw(_("Adequare Settings is not enabled. Please configure Adequare Settings and try again."))
+		
+		if not self.credentials:
+			settings_form = get_link_to_form('Adequare Settings', 'Adequare Settings')
+			frappe.throw(_("Cannot find Adequare Credentials for selected Company GSTIN {}. Please check {}.")
+				.format(self.gstin, settings_form))
 
 	@log_exception
 	def make_request(self, req_type, url, headers, payload):
@@ -79,6 +85,10 @@ class AdequareConnector:
 		}
 		url = self.endpoints.authenticate
 		res = self.make_request('post', url, headers, None)
+		self.handle_successful_token_generation(res)
+
+	@log_exception
+	def handle_successful_token_generation(self, res):
 		self.settings.auth_token = "{} {}".format(res.get('token_type'), res.get('access_token'))
 		self.settings.token_expiry = add_to_date(None, seconds=res.get('expires_in'))
 		self.settings.save(ignore_permissions=True)
@@ -113,6 +123,21 @@ class AdequareConnector:
 
 		response = self.make_request('post', url, headers, payload)
 
+		sucess, errors = self.handle_irn_generation_response(response)
+		return sucess, errors
+
+	@staticmethod
+	@log_exception
+	def generate_irn(einvoice):
+		gstin = einvoice.seller_gstin
+		connector = AdequareConnector(gstin)
+		connector.einvoice = einvoice
+		success, errors = connector.make_irn_request()
+
+		return success, errors
+
+	@log_exception
+	def handle_irn_generation_response(self, response):
 		if response.get('success'):
 			govt_response = response.get('result')
 			self.handle_successful_irn_generation(govt_response)
@@ -125,16 +150,6 @@ class AdequareConnector:
 			return False, errors
 
 		return True, []
-
-	@staticmethod
-	@log_exception
-	def generate_irn(einvoice):
-		gstin = einvoice.seller_gstin
-		connector = AdequareConnector(gstin)
-		connector.einvoice = einvoice
-		success, errors = connector.make_irn_request()
-
-		return success, errors
 
 	def handle_successful_irn_generation(self, response):
 		status = 'IRN Generated'
@@ -240,6 +255,11 @@ class AdequareConnector:
 		url = self.endpoints.cancel_irn
 		response = self.make_request('post', url, headers, payload)
 
+		sucess, errors = self.handle_irn_generation_response(response)
+		return sucess, errors
+
+	@log_exception
+	def handle_irn_cancellation_response(self, response):
 		irn_already_cancelled = '9999' in response.get('message')
 		if response.get('success') or irn_already_cancelled:
 			govt_response = response.get('result')
@@ -253,7 +273,7 @@ class AdequareConnector:
 
 	def handle_successful_irn_cancellation(self, response):
 		self.einvoice.irn_cancelled = 1
-		self.einvoice.irn_cancel_date = response.get('CancelDate', '')
+		self.einvoice.irn_cancel_date = response.get('CancelDate')
 		self.einvoice.status = 'IRN Cancelled'
 		self.einvoice.flags.ignore_validate_update_after_submit = 1
 		self.einvoice.flags.ignore_permissions = 1
