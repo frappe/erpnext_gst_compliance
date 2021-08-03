@@ -96,7 +96,7 @@ class TestAdequareConnector(unittest.TestCase):
 	
 	def test_irn_cancellation(self):
 		# with successful response
-		response = frappe._dict(self.valid_irn_response)
+		response = frappe._dict(self.valid_irn_cancel_response)
 		success, errors = self.connector.handle_irn_cancellation_response(response)
 		self.assertTrue(success)
 		self.assertEqual(self.connector.einvoice.irn_cancelled, 1)
