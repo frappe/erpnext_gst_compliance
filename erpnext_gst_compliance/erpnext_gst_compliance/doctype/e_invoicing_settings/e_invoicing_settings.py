@@ -8,7 +8,7 @@ from frappe.utils.data import get_link_to_form
 
 class EInvoicingSettings(Document):
 	def validate(self):
-		if not frappe.db.get_single_value(self.service_provider, 'enabled'):
+		if self.service_provider and not frappe.db.get_single_value(self.service_provider, 'enabled'):
 			settings_form = get_link_to_form(self.service_provider, self.service_provider)
-			frappe.throw(_('Selected Service Provider is disabled. Please enable it by visitng {} Form.').format(
-				settings_form))
+			frappe.throw(_('Selected Service Provider is disabled. Please enable it by visitng {} Form.')
+				.format(settings_form))
