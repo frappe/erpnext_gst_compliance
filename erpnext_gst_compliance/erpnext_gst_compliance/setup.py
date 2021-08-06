@@ -5,16 +5,12 @@ def setup():
     setup_custom_fields()
 
 def setup_custom_fields():
-	company = frappe.get_all('Company', filters = {'country': 'India'})
-	if not company:
-		return
-		
 	custom_fields = {
 		'Sales Invoice': [
-			dict(fieldname='e_invoice_section', label='E-Invoice Details', fieldtype='Section Break', insert_after='amended_from',
+			dict(fieldname='einvoice_section', label='E-Invoice Details', fieldtype='Section Break', insert_after='amended_from',
 				print_hide=1, depends_on='e_invoice', collapsible=1, collapsible_depends_on='e_invoice'),
 		
-			dict(fieldname='e_invoice', label='E-Invoice', fieldtype='Link', read_only=1, insert_after='e_invoice_section',
+			dict(fieldname='e_invoice', label='E-Invoice', fieldtype='Link', read_only=1, insert_after='einvoice_section',
 				options='E Invoice', no_copy=1, print_hide=1, depends_on='e_invoice'),
 			
 			dict(fieldname='irn', label='IRN', fieldtype='Data', read_only=1, insert_after='e_invoice', no_copy=1, print_hide=1,
@@ -40,4 +36,5 @@ def setup_custom_fields():
 		]
 	}
 
+	print('Creating Custom Fields for E-Invoicing...')
 	create_custom_fields(custom_fields, update=True)
