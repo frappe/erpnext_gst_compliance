@@ -1,1 +1,3 @@
 ERPNext GST Compliance
+Cleartax Integration
+Adequare Integration
