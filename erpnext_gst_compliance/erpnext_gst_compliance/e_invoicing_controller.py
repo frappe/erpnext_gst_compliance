@@ -35,6 +35,8 @@ def generate_irn(sales_invoice):
 
 	if not success:
 		frappe.throw(errors, title=_('IRN Generation Failed'), as_list=1)
+	else:
+		frappe.msgprint(_("IRN Generated Successfully."), alert=1)
 
 	return success
 
@@ -57,6 +59,8 @@ def cancel_irn(sales_invoice, reason, remark):
 
 	if not success:
 		frappe.throw(errors, title=_('IRN Cancellation Failed'), as_list=1)
+	else:
+		frappe.msgprint(_("IRN Cancelled Successfully."), alert=1)
 
 	return success
 
@@ -84,6 +88,8 @@ def generate_eway_bill(sales_invoice_name, **kwargs):
 
 	if not success:
 		frappe.throw(errors, title=_('E-Way Bill Generation Failed'), as_list=1)
+	else:
+		frappe.msgprint(_("E-Way Bill Generated Successfully."), alert=1)
 
 	return success
 
