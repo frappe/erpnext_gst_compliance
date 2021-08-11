@@ -1,10 +1,12 @@
 frappe.ui.form.on('Sales Invoice', {
 	async refresh(frm) {
+		if (frm.is_dirty()) return;
+
 		const invoice_eligible = await get_einvoice_eligibility(frm.doc);
 
 		if (!invoice_eligible) return;
 
-		const { e_invoice_status } = frm.doc;
+		const { einvoice_status } = frm.doc;
 
 		const add_einvoice_button = (label, action) => {
 			if (!frm.custom_buttons[label]) {
@@ -14,7 +16,7 @@ frappe.ui.form.on('Sales Invoice', {
 		
 		const e_invoicing_controller = 'erpnext_gst_compliance.erpnext_gst_compliance.e_invoicing_controller';
 
-		if (!e_invoice_status || e_invoice_status == 'IRN Pending') {
+		if (!einvoice_status || einvoice_status == 'IRN Pending') {
 			// Generate IRN
 			add_einvoice_button(__('Generate IRN'), async () => {
 				if (frm.is_dirty()) return raise_form_is_dirty_error();
@@ -31,7 +33,7 @@ frappe.ui.form.on('Sales Invoice', {
 		}
 
 
-		if (e_invoice_status == 'IRN Generated') {
+		if (einvoice_status == 'IRN Generated') {
 			// Cancel IRN
 			const fields = get_irn_cancellation_fields();
 			const action = () => {
@@ -64,7 +66,7 @@ frappe.ui.form.on('Sales Invoice', {
 			add_einvoice_button(__('Cancel IRN'), action);
 		}
 
-		if (e_invoice_status == 'IRN Generated') {
+		if (einvoice_status == 'IRN Generated') {
 			// Generate E-Way Bill
 			const action = () => {
 				const d = new frappe.ui.Dialog({
@@ -97,7 +99,7 @@ frappe.ui.form.on('Sales Invoice', {
 
 		// cancel ewaybill api is currently not supported by E-Invoice Portal
 
-		// if (e_invoice_status == 'E-Way Bill Generated') {
+		// if (einvoice_status == 'E-Way Bill Generated') {
 		// 	// Cancel E-Way Bill
 		// 	const fields = get_irn_cancellation_fields();
 		// 	const action = () => {
@@ -130,7 +132,7 @@ frappe.ui.form.on('Sales Invoice', {
 		// 	add_einvoice_button(__('Cancel E-Way Bill'), action);
 		// }
 
-		if (e_invoice_status == 'E-Way Bill Generated') {
+		if (einvoice_status == 'E-Way Bill Generated') {
 			const action = () => {
 				let message = __('Cancellation of e-way bill using API is currently not supported. ');
 				message += '<br><br>';
@@ -250,7 +252,8 @@ const get_eway_bill_fields = () => {
 		{
 			'fieldname': 'transport_document_date',
 			'label': 'Transport Receipt Date',
-			'fieldtype': 'Date'
+			'fieldtype': 'Date',
+			'mandatory_depends_on': 'eval: doc.mode_of_transport == "Road"'
 		},
 		{
 			'fieldname': 'vehicle_type',
