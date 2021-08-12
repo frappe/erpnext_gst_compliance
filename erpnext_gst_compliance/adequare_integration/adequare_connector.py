@@ -272,7 +272,8 @@ class AdequareConnector:
 
 	def handle_successful_irn_cancellation(self, response):
 		self.einvoice.irn_cancelled = 1
-		self.einvoice.irn_cancel_date = response.get('CancelDate')
+		if response.get('result'):
+			self.einvoice.irn_cancel_date = response.get('result').get('CancelDate')
 		self.einvoice.status = 'IRN Cancelled'
 		self.einvoice.flags.ignore_validate_update_after_submit = 1
 		self.einvoice.flags.ignore_permissions = 1
