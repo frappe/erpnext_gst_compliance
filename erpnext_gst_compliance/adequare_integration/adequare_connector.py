@@ -186,7 +186,7 @@ class AdequareConnector:
 			'attached_to_doctype': doctype,
 			'attached_to_name': docname,
 			'attached_to_field': 'qrcode_path',
-			'is_private': 1,
+			'is_private': 0,
 			'content': qr_image.getvalue()
 		})
 		_file.save()
@@ -255,15 +255,14 @@ class AdequareConnector:
 		url = self.endpoints.cancel_irn
 		response = self.make_request('post', url, headers, payload)
 
-		sucess, errors = self.handle_irn_generation_response(response)
+		sucess, errors = self.handle_irn_cancellation_response(response)
 		return sucess, errors
 
 	@log_exception
 	def handle_irn_cancellation_response(self, response):
 		irn_already_cancelled = '9999' in response.get('message')
 		if response.get('success') or irn_already_cancelled:
-			govt_response = response.get('result')
-			self.handle_successful_irn_cancellation(govt_response)
+			self.handle_successful_irn_cancellation(response)
 		else:
 			errors = response.get('message')
 			errors = self.sanitize_error_message(errors)
@@ -273,7 +272,8 @@ class AdequareConnector:
 
 	def handle_successful_irn_cancellation(self, response):
 		self.einvoice.irn_cancelled = 1
-		self.einvoice.irn_cancel_date = response.get('CancelDate')
+		if response.get('result'):
+			self.einvoice.irn_cancel_date = response.get('result').get('CancelDate')
 		self.einvoice.status = 'IRN Cancelled'
 		self.einvoice.flags.ignore_validate_update_after_submit = 1
 		self.einvoice.flags.ignore_permissions = 1

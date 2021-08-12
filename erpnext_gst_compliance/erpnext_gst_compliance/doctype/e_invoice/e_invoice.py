@@ -37,19 +37,19 @@ class EInvoice(Document):
 
 		if self.sales_invoice.e_invoice != self.name:
 			self.sales_invoice.e_invoice = self.name
-		if self.sales_invoice.e_invoice_status != self.status:
-			self.sales_invoice.e_invoice_status = self.status
+		if self.sales_invoice.einvoice_status != self.status:
+			self.sales_invoice.einvoice_status = self.status
 
 		self.sales_invoice.flags.ignore_validate_update_after_submit = 1
 		self.sales_invoice.flags.ignore_permissions = 1
 		self.sales_invoice.save()
 	
 	def on_submit(self):
-		frappe.db.set_value('Sales Invoice', self.invoice, 'e_invoice_status', self.status)
+		frappe.db.set_value('Sales Invoice', self.invoice, 'einvoice_status', self.status)
 
 	def on_trash(self):
 		frappe.db.set_value('Sales Invoice', self.invoice, 'e_invoice', None)
-		frappe.db.set_value('Sales Invoice', self.invoice, 'e_invoice_status', None)
+		frappe.db.set_value('Sales Invoice', self.invoice, 'einvoice_status', None)
 
 	@frappe.whitelist()
 	def fetch_invoice_details(self):
@@ -65,8 +65,7 @@ class EInvoice(Document):
 		self.set_return_doc_reference()
 
 	def set_sales_invoice(self):
-		if not self.get('sales_invoice'):
-			self.sales_invoice = frappe.get_doc('Sales Invoice', self.invoice)
+		self.sales_invoice = frappe.get_doc('Sales Invoice', self.invoice)
 
 	def set_invoice_type(self):
 		self.invoice_type = 'CRN' if self.sales_invoice.is_return else 'INV'
@@ -650,6 +649,7 @@ def create_einvoice(sales_invoice):
 		einvoice.invoice = sales_invoice
 
 	einvoice.sync_with_sales_invoice()
+	einvoice.flags.ignore_permissions = 1
 	einvoice.save()
 	frappe.db.commit()
 
@@ -662,7 +662,7 @@ def validate_sales_invoice_change(doc, method=""):
 	if not doc.e_invoice:
 		return
 	
-	if doc.e_invoice_status in ['IRN Cancelled', 'IRN Pending']:
+	if doc.einvoice_status in ['IRN Cancelled', 'IRN Pending']:
 		return
 
 	if doc.docstatus == 0 and doc._action == 'save':
@@ -735,7 +735,7 @@ def validate_sales_invoice_submission(doc, method=""):
 	if not invoice_eligible:
 		return
 
-	if not doc.get('e_invoice_status') or doc.get('e_invoice_status') == 'IRN Pending':
+	if not doc.get('einvoice_status') or doc.get('einvoice_status') == 'IRN Pending':
 		frappe.throw(_('You must generate IRN before submitting the document.'), title=_('Missing IRN'))
 
 def validate_sales_invoice_cancellation(doc, method=""):
@@ -744,5 +744,5 @@ def validate_sales_invoice_cancellation(doc, method=""):
 	if not invoice_eligible:
 		return
 
-	if doc.get('e_invoice_status') != 'IRN Cancelled':
+	if doc.get('einvoice_status') != 'IRN Cancelled':
 		frappe.throw(_('You must cancel IRN before cancelling the document.'), title=_('Cancellation Not Allowed'))

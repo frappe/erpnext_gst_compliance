@@ -1,1 +1,2 @@
-erpnext_gst_compliance.patches.v13_0.add_einvoice_field_to_sales_invoice
+erpnext_gst_compliance.patches.setup_einvoice_fields
+erpnext_gst_compliance.patches.copy_adequare_credentials
