@@ -3,6 +3,10 @@ from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 def setup():
 	setup_custom_fields()
 
+def on_company_update(doc, method=""):
+	if doc.get('country', '').lower() == 'india':
+		setup_custom_fields()
+
 def setup_custom_fields():
 	custom_fields = {
 		'Sales Invoice': [
