@@ -103,6 +103,7 @@ def copy_adequare_credentials():
 		if not credentials:
 			return
 
+		from frappe.utils.password import get_decrypted_password
 		try:
 			adequare_settings = frappe.get_single('Adequare Settings')
 			for credential in credentials:
@@ -110,7 +111,7 @@ def copy_adequare_credentials():
 					'company': credential.company,
 					'gstin': credential.gstin,
 					'username': credential.username,
-					'password': credential.password
+					'password': get_decrypted_password('E Invoice User', credential.name)
 				})
 			adequare_settings.enabled = 1
 			adequare_settings.sandbox_mode = credential.sandbox_mode
