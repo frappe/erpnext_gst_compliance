@@ -1,6 +1,8 @@
+import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
 def setup():
+	copy_adequare_credentials()
 	setup_custom_fields()
 
 def on_company_update(doc, method=""):
@@ -93,3 +95,25 @@ def setup_custom_fields():
 
 	print('Creating Custom Fields for E-Invoicing...')
 	create_custom_fields(custom_fields, update=True)
+
+def copy_adequare_credentials():
+	if frappe.db.exists('E Invoice Settings'):
+		credentials = frappe.db.sql('select * from `tabE Invoice User`', as_dict=1)
+		if not credentials:
+			return
+
+		try:
+			adequare_settings = frappe.get_single('Adequare Settings')
+			for credential in credentials:
+				adequare_settings.append('credentials', {
+					'company': credential.company,
+					'gstin': credential.gstin,
+					'username': credential.username,
+					'password': credential.password
+				})
+			adequare_settings.enabled = 1
+			adequare_settings.sandbox_mode = credential.sandbox_mode
+			adequare_settings.flags.ignore_validate = True
+			adequare_settings.save()
+		except:
+			frappe.log_error(title="Failed to copy Adeqaure Credentials")
