@@ -26,9 +26,16 @@ def setup_custom_fields():
 			
 			dict(
 				fieldname='irn', label='IRN', fieldtype='Data', read_only=1,
-				insert_after='e_invoice', no_copy=1, print_hide=1,
 				depends_on='eval: doc.einvoice_status != "IRN Cancelled"',
+				insert_after='e_invoice', no_copy=1, print_hide=1,
 				fetch_from='e_invoice.irn', hidden=0, translatable=0
+			),
+
+			dict(
+				fieldname='irn_cancel_date', label='Cancel Date', fieldtype='Data',
+				depends_on='eval: doc.einvoice_status == "IRN Cancelled"',
+				read_only=1, insert_after='irn', no_copy=1,
+				print_hide=1, hidden=0, translatable=0
 			),
 			
 			dict(
@@ -74,6 +81,12 @@ def setup_custom_fields():
 				fieldname='ewaybill', label='E-Way Bill No.', fieldtype='Data',
 				allow_on_submit=1, insert_after='einvoice_status', fetch_from='e_invoice.ewaybill', translatable=0,
 				depends_on='eval:((doc.docstatus === 1 || doc.ewaybill) && doc.eway_bill_cancelled === 0)'
+			),
+
+			dict(
+				fieldname='eway_bill_validity', label='E-Way Bill Validity',
+				fieldtype='Data', no_copy=1, print_hide=1, depends_on='ewaybill',
+				read_only=1, allow_on_submit=1, insert_after='ewaybill'
 			)
 		]
 	}
