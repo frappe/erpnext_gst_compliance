@@ -33,7 +33,7 @@ frappe.ui.form.on('Sales Invoice', {
 		}
 
 
-		if (einvoice_status == 'IRN Generated') {
+		if (['IRN Generated', 'E-Way Bill Cancelled'].includes(einvoice_status)) {
 			// Cancel IRN
 			const fields = get_irn_cancellation_fields();
 			const action = () => {
@@ -66,7 +66,7 @@ frappe.ui.form.on('Sales Invoice', {
 			add_einvoice_button(__('Cancel IRN'), action);
 		}
 
-		if (einvoice_status == 'IRN Generated') {
+		if (['IRN Generated', 'E-Way Bill Cancelled'].includes(einvoice_status)) {
 			// Generate E-Way Bill
 			const action = () => {
 				const d = new frappe.ui.Dialog({
@@ -156,9 +156,9 @@ frappe.ui.form.on('Sales Invoice', {
 								},
 								error: () => d.hide()
 							});
-						}
-					},
-					primary_action_label: __('Update Status')
+						},
+						label: __('Update Status')
+					}
 				});
 			};
 			add_einvoice_button(__("Cancel E-Way Bill"), action);
