@@ -3,6 +3,7 @@ from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
 def setup():
 	copy_adequare_credentials()
+	enable_report_and_print_format()
 	setup_custom_fields()
 
 def on_company_update(doc, method=""):
@@ -117,3 +118,15 @@ def copy_adequare_credentials():
 			adequare_settings.save()
 		except:
 			frappe.log_error(title="Failed to copy Adeqaure Credentials")
+
+def enable_report_and_print_format():
+	frappe.db.set_value("Print Format", "GST E-Invoice", "disabled", 0)
+	if not frappe.db.get_value('Custom Role', dict(report='E-Invoice Summary')):
+		frappe.get_doc(dict(
+			doctype='Custom Role',
+			report='E-Invoice Summary',
+			roles= [
+				dict(role='Accounts User'),
+				dict(role='Accounts Manager')
+			]
+		)).insert()
