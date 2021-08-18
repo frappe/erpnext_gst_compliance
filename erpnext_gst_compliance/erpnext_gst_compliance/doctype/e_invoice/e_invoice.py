@@ -47,9 +47,8 @@ class EInvoice(Document):
 	def on_submit(self):
 		frappe.db.set_value('Sales Invoice', self.invoice, 'einvoice_status', self.status)
 
-	def on_trash(self):
-		frappe.db.set_value('Sales Invoice', self.invoice, 'e_invoice', None)
-		frappe.db.set_value('Sales Invoice', self.invoice, 'einvoice_status', None)
+	def on_cancel(self):
+		frappe.db.set_value('Sales Invoice', self.invoice, 'e_invoice', self.name)
 
 	@frappe.whitelist()
 	def fetch_invoice_details(self):
@@ -750,3 +749,13 @@ def validate_sales_invoice_cancellation(doc, method=""):
 
 	if doc.get('einvoice_status') != 'IRN Cancelled':
 		frappe.throw(_('You must cancel IRN before cancelling the document.'), title=_('Cancellation Not Allowed'))
+
+def cancel_e_invoice(doc, method=""):
+	e_invoice = frappe.get_doc('E Invoice', doc.get('e_invoice'))
+	e_invoice.flags.ignore_permissions = True
+	e_invoice.cancel()
+
+def delete_e_invoice(doc, method=""):
+	e_invoice = frappe.get_doc('E Invoice', doc.get('e_invoice'))
+	e_invoice.flags.ignore_permissions = True
+	e_invoice.delete()
