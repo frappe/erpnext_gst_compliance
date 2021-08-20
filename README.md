@@ -23,4 +23,4 @@ Both of these providers enables one-click e-invoice generation & cancellation.
 
 #### License
 
-MIT
+GNU GPL v3.0
