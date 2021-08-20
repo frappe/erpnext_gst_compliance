@@ -31,7 +31,7 @@ sed -i 's/schedule:/# schedule:/g' Procfile
 sed -i 's/socketio:/# socketio:/g' Procfile
 sed -i 's/redis_socketio:/# redis_socketio:/g' Procfile
 
-bench get-app https://github.com/nextchamp-saqib/erpnext.git --branch remove-einvoicing
+bench get-app https://github.com/frappe/erpnext.git --branch develop
 
 bench start &
 bench --site test_site reinstall --yes
