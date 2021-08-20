@@ -20,7 +20,10 @@ doc_events = {
 	"Sales Invoice": {
 		"on_update": "erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.e_invoice.validate_sales_invoice_change",
 		"on_submit": "erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.e_invoice.validate_sales_invoice_submission",
-		"on_cancel": "erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.e_invoice.validate_sales_invoice_cancellation"
+		"on_cancel": [
+			"erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.e_invoice.validate_sales_invoice_cancellation",
+			"erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.e_invoice.cancel_e_invoice"
+		]
 	},
 	"Company": {
 		"after_insert": "erpnext_gst_compliance.erpnext_gst_compliance.setup.on_company_update",

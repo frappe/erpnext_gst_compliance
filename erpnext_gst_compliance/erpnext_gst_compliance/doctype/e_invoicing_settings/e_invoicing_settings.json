@@ -5,7 +5,8 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "service_provider"
+  "service_provider",
+  "companies"
  ],
  "fields": [
   {
@@ -15,12 +16,19 @@
    "label": "Service Provider Settings",
    "options": "DocType",
    "reqd": 1
+  },
+  {
+   "fieldname": "companies",
+   "fieldtype": "Small Text",
+   "hidden": 1,
+   "label": "Companies",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2021-06-25 12:21:32.810939",
+ "modified": "2021-08-13 15:59:55.025514",
  "modified_by": "Administrator",
  "module": "ERPNext GST Compliance",
  "name": "E Invoicing Settings",

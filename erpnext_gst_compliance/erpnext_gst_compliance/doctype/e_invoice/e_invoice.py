@@ -47,9 +47,8 @@ class EInvoice(Document):
 	def on_submit(self):
 		frappe.db.set_value('Sales Invoice', self.invoice, 'einvoice_status', self.status)
 
-	def on_trash(self):
-		frappe.db.set_value('Sales Invoice', self.invoice, 'e_invoice', None)
-		frappe.db.set_value('Sales Invoice', self.invoice, 'einvoice_status', None)
+	def on_cancel(self):
+		frappe.db.set_value('Sales Invoice', self.invoice, 'e_invoice', self.name)
 
 	@frappe.whitelist()
 	def fetch_invoice_details(self):
@@ -718,13 +717,17 @@ def validate_einvoice_eligibility(doc):
 	if getdate(doc.get('posting_date')) < getdate(einvoicing_eligible_from):
 		return False
 
-	# TODO - add company check
+	eligible_companies = frappe.db.get_single_value('E Invoicing Settings', 'companies')
+	invalid_company = doc.get('company') not in eligible_companies
 	invalid_supply_type = doc.get('gst_category') not in ['Registered Regular', 'SEZ', 'Overseas', 'Deemed Export']
 	inter_company_transaction = doc.get('billing_address_gstin') == doc.get('company_gstin')
 	has_non_gst_item = any(d for d in doc.get('items', []) if d.get('is_non_gst'))
-	no_taxes_applied = not doc.get('taxes')
 
-	if invalid_supply_type or inter_company_transaction or no_taxes_applied or has_non_gst_item:
+	# if export invoice, then taxes can be empty
+	# invoice can only be ineligible if no taxes applied and is not an export invoice
+	no_taxes_applied = not doc.get('taxes') and not doc.get('gst_category') == 'Overseas'
+
+	if invalid_company or invalid_supply_type or inter_company_transaction or no_taxes_applied or has_non_gst_item:
 		return False
 
 	return True
@@ -746,3 +749,13 @@ def validate_sales_invoice_cancellation(doc, method=""):
 
 	if doc.get('einvoice_status') != 'IRN Cancelled':
 		frappe.throw(_('You must cancel IRN before cancelling the document.'), title=_('Cancellation Not Allowed'))
+
+def cancel_e_invoice(doc, method=""):
+	e_invoice = frappe.get_doc('E Invoice', doc.get('e_invoice'))
+	e_invoice.flags.ignore_permissions = True
+	e_invoice.cancel()
+
+def delete_e_invoice(doc, method=""):
+	e_invoice = frappe.get_doc('E Invoice', doc.get('e_invoice'))
+	e_invoice.flags.ignore_permissions = True
+	e_invoice.delete()

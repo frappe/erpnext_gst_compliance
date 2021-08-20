@@ -12,3 +12,11 @@ class EInvoicingSettings(Document):
 			settings_form = get_link_to_form(self.service_provider, self.service_provider)
 			frappe.throw(_('Selected Service Provider is disabled. Please enable it by visitng {} Form.')
 				.format(settings_form))
+
+		if self.service_provider:
+			service_provider_doc = frappe.get_single(self.service_provider)
+			if not service_provider_doc.credentials:
+				msg = _("Selected Service Provider doesn't have credentials setup.") + ' '
+				msg += _("Please add atleast one credential to enable e-invoicing.")
+				frappe.throw(msg)
+			self.companies = ', '.join((d.company for d in service_provider_doc.credentials))

@@ -1,6 +1,9 @@
+import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
 def setup():
+	copy_adequare_credentials()
+	enable_report_and_print_format()
 	setup_custom_fields()
 
 def on_company_update(doc, method=""):
@@ -93,3 +96,38 @@ def setup_custom_fields():
 
 	print('Creating Custom Fields for E-Invoicing...')
 	create_custom_fields(custom_fields, update=True)
+
+def copy_adequare_credentials():
+	if frappe.db.exists('E Invoice Settings'):
+		credentials = frappe.db.sql('select * from `tabE Invoice User`', as_dict=1)
+		if not credentials:
+			return
+
+		from frappe.utils.password import get_decrypted_password
+		try:
+			adequare_settings = frappe.get_single('Adequare Settings')
+			for credential in credentials:
+				adequare_settings.append('credentials', {
+					'company': credential.company,
+					'gstin': credential.gstin,
+					'username': credential.username,
+					'password': get_decrypted_password('E Invoice User', credential.name)
+				})
+			adequare_settings.enabled = 1
+			adequare_settings.sandbox_mode = credential.sandbox_mode
+			adequare_settings.flags.ignore_validate = True
+			adequare_settings.save()
+		except:
+			frappe.log_error(title="Failed to copy Adeqaure Credentials")
+
+def enable_report_and_print_format():
+	frappe.db.set_value("Print Format", "GST E-Invoice", "disabled", 0)
+	if not frappe.db.get_value('Custom Role', dict(report='E-Invoice Summary')):
+		frappe.get_doc(dict(
+			doctype='Custom Role',
+			report='E-Invoice Summary',
+			roles= [
+				dict(role='Accounts User'),
+				dict(role='Accounts Manager')
+			]
+		)).insert()
