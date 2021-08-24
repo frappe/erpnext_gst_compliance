@@ -751,11 +751,13 @@ def validate_sales_invoice_cancellation(doc, method=""):
 		frappe.throw(_('You must cancel IRN before cancelling the document.'), title=_('Cancellation Not Allowed'))
 
 def cancel_e_invoice(doc, method=""):
-	e_invoice = frappe.get_doc('E Invoice', doc.get('e_invoice'))
-	e_invoice.flags.ignore_permissions = True
-	e_invoice.cancel()
+	if doc.get('e_invoice'):
+		e_invoice = frappe.get_doc('E Invoice', doc.get('e_invoice'))
+		e_invoice.flags.ignore_permissions = True
+		e_invoice.cancel()
 
 def delete_e_invoice(doc, method=""):
-	e_invoice = frappe.get_doc('E Invoice', doc.get('e_invoice'))
-	e_invoice.flags.ignore_permissions = True
-	e_invoice.delete()
+	if doc.get('e_invoice'):
+		e_invoice = frappe.get_doc('E Invoice', doc.get('e_invoice'))
+		e_invoice.flags.ignore_permissions = True
+		e_invoice.delete()
