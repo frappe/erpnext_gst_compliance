@@ -10,7 +10,7 @@ from frappe import _
 from json import loads, dumps
 from frappe.model import default_fields
 from frappe.model.document import Document
-from frappe.utils.data import cint, format_date, getdate
+from frappe.utils.data import cint, format_date, getdate, flt
 from frappe.core.doctype.version.version import get_diff
 
 from erpnext.regional.india.utils import get_gst_accounts
@@ -181,6 +181,11 @@ class EInvoice(Document):
 
 			is_service_item = item.gst_hsn_code[:2] == "99"
 
+			if flt(item.qty) == 0.0:
+				rate = abs(item.taxable_value)
+			else:
+				rate = abs((abs(item.taxable_value)) / item.qty)
+
 			einvoice_item = frappe._dict({
 				'si_item_ref': item.name,
 				'item_code': item.item_code,
@@ -190,7 +195,7 @@ class EInvoice(Document):
 				'quantity': abs(item.qty),
 				'discount': 0,
 				'unit': item.uom,
-				'rate': abs((abs(item.taxable_value)) / item.qty),
+				'rate': rate,
 				'amount': abs(item.taxable_value),
 				'taxable_value': abs(item.taxable_value)
 			})
