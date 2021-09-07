@@ -1,10 +1,13 @@
 import frappe
+from frappe.utils import cint, add_to_date
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
 def setup():
 	copy_adequare_credentials()
 	enable_report_and_print_format()
 	setup_custom_fields()
+	update_sales_invoices()
+	create_einvoices()
 
 def on_company_update(doc, method=""):
 	if doc.get('country', '').lower() == 'india':
@@ -16,29 +19,22 @@ def setup_custom_fields():
 			dict(
 				fieldname='einvoice_section', label='E-Invoice Details',
 				fieldtype='Section Break', insert_after='amended_from',
-				print_hide=1, depends_on='e_invoice', collapsible=1,
-				collapsible_depends_on='e_invoice', hidden=0
-			),
-		
-			dict(
-				fieldname='e_invoice', label='E-Invoice', fieldtype='Link',
-				read_only=1, insert_after='einvoice_section',
-				options='E Invoice', no_copy=1, print_hide=1,
-				depends_on='e_invoice', hidden=0
-			),
-			
-			dict(
-				fieldname='irn', label='IRN', fieldtype='Data', read_only=1,
-				depends_on='eval: doc.einvoice_status != "IRN Cancelled"',
-				insert_after='e_invoice', no_copy=1, print_hide=1,
-				fetch_from='e_invoice.irn', hidden=0, translatable=0
+				print_hide=1, depends_on='eval: doc.e_invoice || doc.irn',
+				collapsible_depends_on='eval: doc.e_invoice || doc.irn',
+				collapsible=1, hidden=0
 			),
 
 			dict(
-				fieldname='irn_cancel_date', label='Cancel Date', fieldtype='Data',
+				fieldname='irn', label='IRN', fieldtype='Data', read_only=1,
+				depends_on='irn', insert_after='einvoice_section', no_copy=1,
+				print_hide=1, fetch_from='e_invoice.irn', hidden=0, translatable=0
+			),
+
+			dict(
+				fieldname='irn_cancel_date', label='IRN Cancelled On',
+				fieldtype='Data', read_only=1, insert_after='irn', hidden=0,
 				depends_on='eval: doc.einvoice_status == "IRN Cancelled"',
-				read_only=1, insert_after='irn', no_copy=1,
-				print_hide=1, hidden=0, translatable=0
+				fetch_from='e_invoice.irn_cancel_date', no_copy=1, print_hide=1, translatable=0
 			),
 			
 			dict(
@@ -49,29 +45,30 @@ def setup_custom_fields():
 			),
 
 			dict(
-				fieldname='col_break_1', label='', fieldtype='Column Break',
-				insert_after='ack_no', print_hide=1, read_only=1
-			),
-
-			dict(
-				fieldname='einvoice_status', label='E-Invoice Status',
-				fieldtype='Data', read_only=1, no_copy=1, hidden=0,
-				insert_after='col_break_1', print_hide=1, depends_on='e_invoice',
-				fetch_from='e_invoice.status', options='', translatable=0
-			),
-
-			dict(
 				fieldname='ack_date', label='Ack. Date', fieldtype='Data',
-				read_only=1, insert_after='einvoice_status', hidden=0,
+				read_only=1, insert_after='ack_no', hidden=0,
 				depends_on='eval: doc.einvoice_status != "IRN Cancelled"',
 				fetch_from='e_invoice.ack_date', no_copy=1, print_hide=1, translatable=0
 			),
 
 			dict(
-				fieldname='irn_cancel_date', label='IRN Cancelled On',
-				fieldtype='Data', read_only=1, insert_after='einvoice_status', hidden=0,
-				depends_on='eval: doc.einvoice_status == "IRN Cancelled"',
-				fetch_from='e_invoice.irn_cancel_date', no_copy=1, print_hide=1, translatable=0
+				fieldname='col_break_1', label='', fieldtype='Column Break',
+				insert_after='ack_no', print_hide=1, read_only=1
+			),
+
+			dict(
+				fieldname='e_invoice', label='E-Invoice', fieldtype='Link',
+				read_only=1, insert_after='col_break_1',
+				options='E Invoice', no_copy=1, print_hide=1,
+				depends_on='eval: doc.e_invoice || doc.irn', hidden=0
+			),
+
+			dict(
+				fieldname='einvoice_status', label='E-Invoice Status',
+				fieldtype='Data', read_only=1, no_copy=1, hidden=0,
+				insert_after='e_invoice', print_hide=1, options='',
+				depends_on='eval: doc.e_invoice || doc.irn',
+				fetch_from='e_invoice.status', translatable=0
 			),
 
 			dict(
@@ -103,9 +100,11 @@ def copy_adequare_credentials():
 		if not credentials:
 			return
 
+		print('Copying Credentials for E-Invoicing...')
 		from frappe.utils.password import get_decrypted_password
 		try:
 			adequare_settings = frappe.get_single('Adequare Settings')
+			adequare_settings.credentials = []
 			for credential in credentials:
 				adequare_settings.append('credentials', {
 					'company': credential.company,
@@ -114,9 +113,13 @@ def copy_adequare_credentials():
 					'password': get_decrypted_password('E Invoice User', credential.name)
 				})
 			adequare_settings.enabled = 1
-			adequare_settings.sandbox_mode = credential.sandbox_mode
 			adequare_settings.flags.ignore_validate = True
 			adequare_settings.save()
+			frappe.db.commit()
+
+			e_invoicing_settings = frappe.get_single('E Invoicing Settings')
+			e_invoicing_settings.service_provider = 'Adequare Settings'
+			e_invoicing_settings.save()
 		except:
 			frappe.log_error(title="Failed to copy Adeqaure Credentials")
 
@@ -131,3 +134,74 @@ def enable_report_and_print_format():
 				dict(role='Accounts Manager')
 			]
 		)).insert()
+
+def update_sales_invoices():
+	einvoices = frappe.get_all(
+		doctype='Sales Invoice',
+		filters={'irn': ['is', 'set']},
+		fields=['name', 'irn', 'irn_cancelled', 'ewaybill', 'eway_bill_cancelled', 'einvoice_status']
+	)
+
+	if not einvoices:
+		return
+
+	print('Updating Sales Invoices...')
+	for invoice in einvoices:
+		einvoice_status = 'IRN Generated'
+		if cint(invoice.irn_cancelled):
+			einvoice_status = 'IRN Cancelled'
+		if invoice.ewaybill:
+			einvoice_status = 'E-Way Bill Generated'
+		if cint(invoice.eway_bill_cancelled):
+			einvoice_status = 'E-Way Bill Cancelled'
+
+		frappe.db.set_value('Sales Invoice', invoice.name, 'einvoice_status', einvoice_status, update_modified=False)
+	frappe.db.commit()
+
+def create_einvoices():
+	fields = [
+		'name', 'irn', 'ack_no', 'ack_date', 'irn_cancelled', 'irn_cancel_date',
+		'ewaybill', 'eway_bill_validity', 'einvoice_status', 'qrcode_image'
+	]
+
+	draft_einvoices = frappe.get_all(
+		doctype='Sales Invoice',
+		filters={'irn': ['is', 'set'], 'docstatus': 0},
+		fields=fields
+	)
+
+	# sales invoices with irns created within 24 hours
+	recent_einvoices = frappe.db.sql("""
+		select
+			name, irn, ack_no, ack_date, irn_cancelled, irn_cancel_date,
+			ewaybill, eway_bill_validity, einvoice_status, qrcode_image
+		from
+			`tabSales Invoice`
+		where
+			ifnull(irn, '') != '' AND docstatus != 2 AND
+			timestamp(ack_date) >= %s
+	""", (add_to_date(None, hours=-24)), as_dict=1)
+
+	if not draft_einvoices + recent_einvoices:
+		return
+
+	from erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.e_invoice import create_einvoice
+
+	print('Creating E-Invoices...')
+	for invoice in draft_einvoices + recent_einvoices:
+		einvoice = create_einvoice(invoice.name)
+
+		einvoice.irn = invoice.irn
+		einvoice.ack_no = invoice.ack_no
+		einvoice.ack_date = invoice.ack_date
+		einvoice.ewaybill = invoice.ewaybill
+		einvoice.status = invoice.einvoice_status
+		einvoice.qrcode_path = invoice.qrcode_image
+		einvoice.irn_cancelled = invoice.irn_cancelled
+		einvoice.irn_cancelled_on = invoice.irn_cancel_date
+		einvoice.eway_bill_validity = invoice.eway_bill_validity
+
+		einvoice.flags.ignore_permissions = 1
+		einvoice.flags.ignore_validate = 1
+		einvoice.save()
+		einvoice.submit()
