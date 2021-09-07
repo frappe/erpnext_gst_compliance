@@ -45,10 +45,10 @@ class EInvoice(Document):
 		self.sales_invoice.save()
 	
 	def on_submit(self):
-		frappe.db.set_value('Sales Invoice', self.invoice, 'einvoice_status', self.status)
+		frappe.db.set_value('Sales Invoice', self.invoice, 'einvoice_status', self.status, update_modified=False)
 
 	def on_cancel(self):
-		frappe.db.set_value('Sales Invoice', self.invoice, 'e_invoice', self.name)
+		frappe.db.set_value('Sales Invoice', self.invoice, 'e_invoice', self.name, update_modified=False)
 
 	@frappe.whitelist()
 	def fetch_invoice_details(self):
@@ -663,9 +663,11 @@ def get_einvoice(sales_invoice):
 	return frappe.get_doc('E Invoice', sales_invoice)
 
 def validate_sales_invoice_change(doc, method=""):
-	if not doc.e_invoice:
+	invoice_eligible = validate_einvoice_eligibility(doc)
+
+	if not invoice_eligible:
 		return
-	
+
 	if doc.einvoice_status in ['IRN Cancelled', 'IRN Pending']:
 		return
 
