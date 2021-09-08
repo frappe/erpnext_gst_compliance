@@ -159,16 +159,15 @@ def update_sales_invoices():
 	frappe.db.commit()
 
 def create_einvoices():
-	fields = [
-		'name', 'irn', 'ack_no', 'ack_date', 'irn_cancelled', 'irn_cancel_date',
-		'ewaybill', 'eway_bill_validity', 'einvoice_status', 'qrcode_image'
-	]
-
-	draft_einvoices = frappe.get_all(
-		doctype='Sales Invoice',
-		filters={'irn': ['is', 'set'], 'docstatus': 0},
-		fields=fields
-	)
+	draft_einvoices = frappe.db.sql("""
+		select
+			name, irn, ack_no, ack_date, irn_cancelled, irn_cancel_date,
+			ewaybill, eway_bill_validity, einvoice_status, qrcode_image
+		from
+			`tabSales Invoice`
+		where
+			ifnull(irn, '') != '' AND docstatus = 0
+	""", as_dict=1)
 
 	# sales invoices with irns created within 24 hours
 	recent_einvoices = frappe.db.sql("""
