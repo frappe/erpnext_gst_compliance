@@ -9,7 +9,11 @@
   "sandbox_mode",
   "credentials",
   "auth_token",
-  "token_expiry"
+  "token_expiry",
+  "advanced_settings_section",
+  "client_id",
+  "column_break_8",
+  "client_secret"
  ],
  "fields": [
   {
@@ -47,12 +51,32 @@
    "hidden": 1,
    "label": "Token Expiry",
    "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "advanced_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Advanced Settings"
+  },
+  {
+   "fieldname": "client_id",
+   "fieldtype": "Data",
+   "label": "Client ID"
+  },
+  {
+   "fieldname": "client_secret",
+   "fieldtype": "Password",
+   "label": "Client Secret"
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2021-06-21 16:51:49.242534",
+ "modified": "2021-09-09 21:12:57.225905",
  "modified_by": "Administrator",
  "module": "Adequare Integration",
  "name": "Adequare Settings",
