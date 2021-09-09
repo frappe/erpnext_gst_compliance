@@ -162,34 +162,35 @@ def create_einvoices():
 	draft_einvoices = frappe.db.sql("""
 		select
 			name, irn, ack_no, ack_date, irn_cancelled, irn_cancel_date,
-			ewaybill, eway_bill_validity, einvoice_status, qrcode_image
+			ewaybill, eway_bill_validity, einvoice_status, qrcode_image, docstatus
 		from
 			`tabSales Invoice`
 		where
 			ifnull(irn, '') != '' AND docstatus = 0
 	""", as_dict=1)
 
+	draft_einvoices_names = [d.name for d in draft_einvoices]
+
 	# sales invoices with irns created within 24 hours
 	recent_einvoices = frappe.db.sql("""
 		select
 			name, irn, ack_no, ack_date, irn_cancelled, irn_cancel_date,
-			ewaybill, eway_bill_validity, einvoice_status, qrcode_image
+			ewaybill, eway_bill_validity, einvoice_status, qrcode_image, docstatus
 		from
 			`tabSales Invoice`
 		where
 			ifnull(irn, '') != '' AND docstatus != 2 AND
-			timestamp(ack_date) >= %s
-	""", (add_to_date(None, hours=-24)), as_dict=1)
+			timestamp(ack_date) >= %s and name not in %s
+	""", (add_to_date(None, hours=-24), draft_einvoices_names), as_dict=1)
 
 	if not draft_einvoices + recent_einvoices:
 		return
 
-	from erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.e_invoice import create_einvoice
-
 	print('Creating E-Invoices...')
 	for invoice in draft_einvoices + recent_einvoices:
-		einvoice = create_einvoice(invoice.name)
+		einvoice = frappe.new_doc('E Invoice')
 
+		einvoice.invoice = invoice.name
 		einvoice.irn = invoice.irn
 		einvoice.ack_no = invoice.ack_no
 		einvoice.ack_date = invoice.ack_date
@@ -200,7 +201,10 @@ def create_einvoices():
 		einvoice.irn_cancelled_on = invoice.irn_cancel_date
 		einvoice.eway_bill_validity = invoice.eway_bill_validity
 
+		einvoice.sync_with_sales_invoice()
+
 		einvoice.flags.ignore_permissions = 1
 		einvoice.flags.ignore_validate = 1
 		einvoice.save()
-		einvoice.submit()
+		if invoice.docstatus != 0:
+			einvoice.submit()

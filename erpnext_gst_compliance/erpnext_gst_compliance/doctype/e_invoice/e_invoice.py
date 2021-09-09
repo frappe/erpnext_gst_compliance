@@ -33,19 +33,17 @@ class EInvoice(Document):
 		self.update_sales_invoice()
 
 	def update_sales_invoice(self):
-		self.set_sales_invoice()
-
-		if self.sales_invoice.e_invoice != self.name:
-			self.sales_invoice.e_invoice = self.name
-		if self.sales_invoice.einvoice_status != self.status:
-			self.sales_invoice.einvoice_status = self.status
-
-		self.sales_invoice.flags.ignore_validate_update_after_submit = 1
-		self.sales_invoice.flags.ignore_permissions = 1
-		self.sales_invoice.save()
-	
-	def on_submit(self):
-		frappe.db.set_value('Sales Invoice', self.invoice, 'einvoice_status', self.status, update_modified=False)
+		frappe.db.set_value('Sales Invoice', self.invoice, {
+			'irn': self.irn,
+			'ack_no': self.ack_no,
+			'e_invoice': self.name,
+			'ack_date': self.ack_date,
+			'ewaybill': self.ewaybill,
+			'einvoice_status': self.status,
+			'qrcode_image': self.qrcode_path,
+			'irn_cancel_date': self.irn_cancel_date,
+			'eway_bill_validity': self.ewaybill_validity
+		}, update_modified=False)
 
 	def on_cancel(self):
 		frappe.db.set_value('Sales Invoice', self.invoice, 'e_invoice', self.name, update_modified=False)
