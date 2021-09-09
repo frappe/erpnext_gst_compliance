@@ -23,6 +23,10 @@ doc_events = {
 		"on_cancel": [
 			"erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.e_invoice.validate_sales_invoice_cancellation",
 			"erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.e_invoice.cancel_e_invoice"
+		],
+		"on_trash": [
+			"erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.e_invoice.validate_sales_invoice_deletion",
+			"erpnext_gst_compliance.erpnext_gst_compliance.doctype.e_invoice.e_invoice.delete_e_invoice"
 		]
 	},
 	"Company": {

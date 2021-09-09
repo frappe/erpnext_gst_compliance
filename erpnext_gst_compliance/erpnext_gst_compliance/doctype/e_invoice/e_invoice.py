@@ -755,6 +755,15 @@ def validate_sales_invoice_cancellation(doc, method=""):
 	if doc.get('einvoice_status') != 'IRN Cancelled':
 		frappe.throw(_('You must cancel IRN before cancelling the document.'), title=_('Cancellation Not Allowed'))
 
+def validate_sales_invoice_deletion(doc, method=""):
+	invoice_eligible = validate_einvoice_eligibility(doc)
+
+	if not invoice_eligible:
+		return
+
+	if doc.get('einvoice_status') != 'IRN Cancelled':
+		frappe.throw(_('You must cancel IRN before deleting the document.'), title=_('Deletion Not Allowed'))
+
 def cancel_e_invoice(doc, method=""):
 	if doc.get('e_invoice'):
 		e_invoice = frappe.get_doc('E Invoice', doc.get('e_invoice'))
@@ -763,6 +772,9 @@ def cancel_e_invoice(doc, method=""):
 
 def delete_e_invoice(doc, method=""):
 	if doc.get('e_invoice'):
-		e_invoice = frappe.get_doc('E Invoice', doc.get('e_invoice'))
-		e_invoice.flags.ignore_permissions = True
-		e_invoice.delete()
+		frappe.db.set_value('Sales Invoice', doc.get('name'), 'e_invoice', '')
+		frappe.delete_doc(
+			doctype='E Invoice',
+			name=doc.get('e_invoice'),
+			ignore_missing=True
+		)
