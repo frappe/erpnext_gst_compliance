@@ -136,11 +136,14 @@ def enable_report_and_print_format():
 		)).insert()
 
 def update_sales_invoices():
-	einvoices = frappe.get_all(
-		doctype='Sales Invoice',
-		filters={'irn': ['is', 'set']},
-		fields=['name', 'irn', 'irn_cancelled', 'ewaybill', 'eway_bill_cancelled', 'einvoice_status']
-	)
+	einvoices = frappe.db.sql("""
+		select
+			name, irn, irn_cancelled, ewaybill, eway_bill_cancelled, einvoice_status
+		from
+			`tabSales Invoice`
+		where
+			ifnull(irn, '') != ''
+	""", as_dict=1)
 
 	if not einvoices:
 		return
