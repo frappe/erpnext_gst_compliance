@@ -6,8 +6,7 @@ def setup():
 	copy_adequare_credentials()
 	enable_report_and_print_format()
 	setup_custom_fields()
-	update_sales_invoices()
-	create_einvoices()
+	handle_existing_e_invoices()
 
 def on_company_update(doc, method=""):
 	if doc.get('country', '').lower() == 'india':
@@ -135,6 +134,14 @@ def enable_report_and_print_format():
 			]
 		)).insert()
 
+def handle_existing_e_invoices():
+	if frappe.get_all('Sales Invoice', {'irn': ['is', 'set']}):
+		try:
+			update_sales_invoices()
+			create_einvoices()
+		except Exception:
+			frappe.log_error(title="Backporting Sales Invoices Failed")
+
 def update_sales_invoices():
 	einvoices = frappe.db.sql("""
 		select
@@ -191,23 +198,27 @@ def create_einvoices():
 
 	print('Creating E-Invoices...')
 	for invoice in draft_einvoices + recent_einvoices:
-		einvoice = frappe.new_doc('E Invoice')
+		try:
+			einvoice = frappe.new_doc('E Invoice')
 
-		einvoice.invoice = invoice.name
-		einvoice.irn = invoice.irn
-		einvoice.ack_no = invoice.ack_no
-		einvoice.ack_date = invoice.ack_date
-		einvoice.ewaybill = invoice.ewaybill
-		einvoice.status = invoice.einvoice_status
-		einvoice.qrcode_path = invoice.qrcode_image
-		einvoice.irn_cancelled = invoice.irn_cancelled
-		einvoice.irn_cancelled_on = invoice.irn_cancel_date
-		einvoice.eway_bill_validity = invoice.eway_bill_validity
+			einvoice.invoice = invoice.name
+			einvoice.irn = invoice.irn
+			einvoice.ack_no = invoice.ack_no
+			einvoice.ack_date = invoice.ack_date
+			einvoice.ewaybill = invoice.ewaybill
+			einvoice.status = invoice.einvoice_status
+			einvoice.qrcode_path = invoice.qrcode_image
+			einvoice.irn_cancelled = invoice.irn_cancelled
+			einvoice.irn_cancelled_on = invoice.irn_cancel_date
+			einvoice.eway_bill_validity = invoice.eway_bill_validity
 
-		einvoice.sync_with_sales_invoice()
+			einvoice.sync_with_sales_invoice()
 
-		einvoice.flags.ignore_permissions = 1
-		einvoice.flags.ignore_validate = 1
-		einvoice.save()
-		if invoice.docstatus != 0:
-			einvoice.submit()
+			einvoice.flags.ignore_permissions = 1
+			einvoice.flags.ignore_validate = 1
+			einvoice.save()
+			if invoice.docstatus != 0:
+				einvoice.submit()
+
+		except Exception:
+			frappe.log_error(title="E-Invoice Creation Failed")
