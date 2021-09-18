@@ -9,7 +9,10 @@ app_color = "grey"
 app_email = "developers@erpnext.com"
 app_license = "MIT"
 
-before_tests = "erpnext.setup.utils.before_tests"
+before_tests = [
+	"erpnext.setup.utils.before_tests",
+	"erpnext_gst_compliance.erpnext_gst_compliance.setup.before_test"
+]
 after_install = "erpnext_gst_compliance.erpnext_gst_compliance.setup.setup"
 
 doctype_js = {

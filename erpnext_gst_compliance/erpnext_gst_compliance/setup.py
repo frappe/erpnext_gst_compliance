@@ -52,7 +52,7 @@ def setup_custom_fields():
 
 			dict(
 				fieldname='col_break_1', label='', fieldtype='Column Break',
-				insert_after='ack_no', print_hide=1, read_only=1
+				insert_after='ack_date', print_hide=1, read_only=1
 			),
 
 			dict(
@@ -222,3 +222,9 @@ def create_einvoices():
 
 		except Exception:
 			frappe.log_error(title="E-Invoice Creation Failed")
+
+def before_test():
+	from frappe.test_runner import make_test_records_for_doctype
+	for doctype in ['Company', 'Customer']:
+		frappe.local.test_objects[doctype] = []
+		make_test_records_for_doctype(doctype, force=1)
