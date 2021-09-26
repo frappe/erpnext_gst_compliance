@@ -9,7 +9,7 @@ def setup():
 	handle_existing_e_invoices()
 
 def on_company_update(doc, method=""):
-	if doc.get('country', '').lower() == 'india':
+	if frappe.db.count('Company', {'country': 'India'}) <=1:
 		setup_custom_fields()
 
 def setup_custom_fields():
