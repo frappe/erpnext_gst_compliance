@@ -56,6 +56,7 @@ class EInvoice(Document):
 		self.set_seller_details()
 		self.set_buyer_details()
 		self.set_shipping_details()
+		self.set_dispatch_details()
 		self.set_item_details()
 		self.set_value_details()
 		self.set_payment_details()
@@ -160,6 +161,18 @@ class EInvoice(Document):
 				self.shipping_state_code = 96
 				self.shipping_pincode = 999999
 				self.shipping_place_of_supply = 96
+
+	def set_dispatch_details(self):
+		dispatch_address_name = self.sales_invoice.dispatch_address_name
+		if dispatch_address_name:
+			dispatch_address = frappe.get_all('Address', {'name': dispatch_address_name}, ['*'])[0]
+
+			self.dispatch_legal_name = dispatch_address.address_title
+			self.dispatch_location = dispatch_address.city
+			self.dispatch_pincode = dispatch_address.pincode
+			self.dispatch_address_line_1 = dispatch_address.address_line1
+			self.dispatch_address_line_2 = dispatch_address.address_line2
+			self.dispatch_state_code = dispatch_address.gst_state_number
 
 	def set_item_details(self):
 		sales_invoice_item_names = [d.name for d in self.sales_invoice.items]
