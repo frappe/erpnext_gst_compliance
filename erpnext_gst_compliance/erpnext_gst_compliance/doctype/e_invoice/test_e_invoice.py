@@ -40,13 +40,29 @@ class TestEInvoice(unittest.TestCase):
 
 	def test_party_details(self):
 		self.assertEqual(self.e_invoice.seller_legal_name, self.sales_invoice.company)
+		self.assertEqual(self.e_invoice.seller_address_line_1, '_Test Address Line 1')
+		self.assertEqual(self.e_invoice.seller_address_line_2, '_Test Address Line 2')
 		self.assertEqual(self.e_invoice.seller_gstin, '27AAECE4835E1ZR')
 		self.assertEqual(self.e_invoice.seller_pincode, '401108')
 		self.assertEqual(self.e_invoice.seller_state_code, '27')
+
 		self.assertEqual(self.e_invoice.buyer_legal_name, self.sales_invoice.customer)
+		self.assertEqual(self.e_invoice.buyer_address_line_1, '_Test Address Line 1')
+		self.assertEqual(self.e_invoice.buyer_address_line_2, '_Test Address Line 2')
 		self.assertEqual(self.e_invoice.buyer_gstin, '27AACCM7806M1Z3')
 		self.assertEqual(self.e_invoice.buyer_pincode, '410038')
 		self.assertEqual(self.e_invoice.buyer_place_of_supply, '27')
+
+		self.assertEqual(self.e_invoice.shipping_address_line_1, '_Test Address Line 1')
+		self.assertEqual(self.e_invoice.shipping_address_line_2, '_Test Address Line 2')
+		self.assertEqual(self.e_invoice.shipping_pincode, '410098')
+		self.assertEqual(self.e_invoice.shipping_state_code, '27')
+		self.assertFalse(self.e_invoice.shipping_gstin)
+
+		self.assertEqual(self.e_invoice.dispatch_address_line_1, '_Test Dispatch Address Line 1')
+		self.assertEqual(self.e_invoice.dispatch_address_line_2, '_Test Dispatch Address Line 2')
+		self.assertEqual(self.e_invoice.dispatch_pincode, '1100101')
+		self.assertEqual(self.e_invoice.dispatch_state_code, '07')
 
 	def test_item_validations(self):
 		item = self.e_invoice.items[0]
@@ -81,8 +97,8 @@ class TestEInvoice(unittest.TestCase):
 
 def make_e_invoice():
 	sales_invoice = get_sales_invoice_for_e_invoice()
-	sales_invoice.items[0].gst_hsn_code = "990002"
-	sales_invoice.items[1].gst_hsn_code = "890002"
+	sales_invoice.items[0].gst_hsn_code = '990002'
+	sales_invoice.items[1].gst_hsn_code = '890002'
 	sales_invoice.save()
 
 	e_invoice = frappe.new_doc('E Invoice')
