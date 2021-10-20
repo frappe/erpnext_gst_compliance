@@ -7,7 +7,7 @@ app_description = "Manage GST Compliance of ERPNext"
 app_icon = "octicon octicon-file-directory"
 app_color = "grey"
 app_email = "developers@erpnext.com"
-app_license = "MIT"
+app_license = "GNU GPL v3.0"
 
 before_tests = [
 	"erpnext.setup.utils.before_tests",
