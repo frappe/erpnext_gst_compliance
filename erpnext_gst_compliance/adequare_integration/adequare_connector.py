@@ -80,7 +80,7 @@ class AdequareConnector:
 	@log_exception
 	def fetch_auth_token(self):
 		client_id = self.settings.client_id or frappe.conf.einvoice_client_id
-		client_secret = self.settings.client_secret or frappe.conf.einvoice_client_secret
+		client_secret = self.settings.get_password('client_secret') or frappe.conf.einvoice_client_secret
 		headers = {
 			'gspappid': client_id,
 			'gspappsecret': client_secret
